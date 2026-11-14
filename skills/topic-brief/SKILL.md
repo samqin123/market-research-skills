@@ -1,6 +1,6 @@
 ---
 name: topic-brief
-description: Generate a topic-focused briefing in HTML from public news sources. Use when user asks for a briefing / observation / digest / 简报 / 观察 on any subject — region (Middle East, ASEAN, India), industry (semiconductors, EV supply chain, AI), policy issue (AI regulation, critical minerals, cross-border payments), institution (Fed, ECB, IMF), or theme. Output is a single self-contained HTML file with blue-color "TOPIC BRIEF" branding, optimized for both browser viewing and direct copy-paste into 微信公众号 / WeChat Official Account editor. Walks through 5 steps with one user confirmation midway. Do NOT use this skill for short summaries (<1000 字), single-piece news commentary, or already-defined report templates.
+description: Generate a topic-focused briefing in HTML from public news sources. Use when user asks for a briefing / observation / digest / 简报 / 观察 on any subject — region (Middle East, ASEAN, India), industry (semiconductors, EV supply chain, AI), policy issue (AI regulation, critical minerals, cross-border payments), institution (Fed, ECB, IMF), or theme. Output is a single self-contained HTML file, styled by a shared template (`light-green` default / `classic-blue` / `warm-paper`), optimized for both browser viewing and direct copy-paste into 微信公众号 / WeChat Official Account editor. Walks through 5 steps with one user confirmation midway, after a level-1 cost card. Do NOT use this skill for short summaries (<1000 字), single-piece news commentary, or already-defined report templates.
 ---
 
 # Topic Brief — Thematic Observation Briefing Generator
@@ -20,23 +20,21 @@ User says something like:
 
 Any descriptive request such as "make a briefing / observation / digest on XX" should activate this skill.
 
-## Scope exclusions
+## Controversial topics (multi-source side-by-side)
 
-Before producing any briefing, check whether the subject falls into a refused category. The following are out of scope regardless of phrasing:
+Political, military, religious, geopolitical, identity and other contested subjects are **in scope**.
+All subjects are handled; there is no one-line shutdown. Apply the usual whitelist and no-fabrication
+discipline, plus:
 
-- **Political issues** — elections, parties, political figures' positions, government legitimacy debates
-- **Military issues** — operations, force composition, equipment counts, conflict details, defense policy
-- **Religious issues** — doctrines, denominational disputes, religious leaders' statements
-- **Entertainment celebrity gossip** — personal life, scandals, fan disputes
-- **Other inherently controversial topics** — culture wars, identity disputes, value-judgement debates
-
-If the requested subject is one of the above, reply with exactly one line and stop:
-
-```
-Out of scope. (超出能力范围)
-```
-
-Do not run search, do not draft anything, do not negotiate the scope.
+- For a contested subject, gather **at least two authoritative sources with different standpoints**
+  and present them side by side in the briefing; attribute each item / claim to its source and
+  standpoint.
+- **Do not write a single-party conclusion.** If sources disagree, say so explicitly in the focus
+  body and in the item wording; explain the material difference (definition / time point / scope /
+  standpoint). If they agree, cite both.
+- Keep fact / estimate / inference separate. A contested assertion is not promoted to fact because
+  one source asserts it.
+- If only one side is available, state that the other side was not reachable; never invent balance.
 
 ## Response language
 
@@ -44,7 +42,20 @@ Reply in the language of the user's request. Chinese question → Chinese reply;
 
 ## 5-step workflow
 
-### Step 1 — Collect parameters (one user-facing question prompt, 4 questions)
+### Step 0 — Cost gate (level 1, one line)
+
+Before gathering material, print the compact level-1 card and wait for one word:
+
+```bash
+python3 ../../scripts/estimate.py --mode topic-brief
+```
+
+It prints something like `[L1] topic-brief · free (group/free-first) · tokens ≈ ... · ¥0 · template: light-green · proceed? (one word)`.
+The user replies one word ("go" / "好") and work starts. If the rendered command is inside a packaged
+skill and the shared script is absent, reproduce the same one-line card from `../../references/cost-gate.md`.
+The template choice sits on the same screen as this card (default `light-green`; choosing nothing does not block).
+
+### Step 1 — Collect parameters (one user-facing question prompt, 5 questions)
 
 If the user did not provide all parameters in the trigger, ask everything in **one batched user-question prompt**:
 
@@ -53,18 +64,19 @@ If the user did not provide all parameters in the trigger, ask everything in **o
 | What is this issue's subject? | 主题 / Subject | free text (region / industry / issue / institution name) |
 | Time window? | 时间 / Period | "past two weeks / past month / past quarter / custom range". **Immediately normalize the answer to two ISO dates `[period_start, period_end]`** (YYYY-MM-DD). Example: if today is 2026-05-13 and the user says "past month" → period_start=2026-04-13, period_end=2026-05-13 |
 | Source preference? | 信息源 / Sources | "A default authoritative whitelist / B my own whitelist / C block certain sources" |
-| Author byline? | 作者 / Author | Prompt: "The cover bottom-left author slot defaults to 'developed by Gen' — what should it show?" Explicit options: "A keep default / B leave blank". The user-question prompt's built-in `Other` option lets the user type a custom byline. |
+| Output template? | 模板 / Template | `light-green` (default, reading comfort) · `classic-blue` (upstream original blue) · `warm-paper` (humanities / history). Default `light-green`; choosing nothing does not block. |
+| Author byline? | 作者 / Author | Prompt: "The cover bottom-left author slot is **blank by default**; what should it show?" Options: "A leave blank / B custom byline". The user-question prompt's built-in `Other` option lets the user type a custom byline. |
 
 - The **subject** field lands in JSON as `subject_name` (e.g., "中东", "半导体", "AI 立法")
-- The **author** field lands in JSON as `author`, rendered at the cover bottom-left. Three user options map to three JSON states:
+- The **author** field lands in JSON as `author`, rendered at the cover bottom-left. Two user options map to two JSON states:
 
   | User choice | JSON action | Rendered effect |
   |---|---|---|
-  | A keep default | omit `author` field | shows "developed by Gen" (schema default) |
-  | B leave blank | write `"author": ""` | blank |
+  | A leave blank (default) | omit `author` or write `"author": ""` | blank |
   | Other custom (e.g., "张三 · 研究院") | write `"author": "张三 · 研究院"` | custom text |
 
-- Within the same session, if the user has already answered the author question, reuse the last value for subsequent runs (unless they change it).
+- There is **no built-in author signature**; the schema default is empty.
+- Within the same session, if the user has already answered the author / template question, reuse the last value for subsequent runs (unless they change it).
 
 If the trigger already specifies every parameter ("做 5.1–5.12 的中东观察，作者署名 '张三'"), skip the question prompt and proceed.
 
@@ -149,18 +161,21 @@ Every concrete number (percentage, currency amount, date, count) must be traceab
 ### Step 5 — Render and report
 
 ```bash
-python3 scripts/render.py output/seed/<subject>_<period_end>.json --out output --open
+python3 scripts/render.py output/seed/<subject>_<period_end>.json --out output --template light-green --open
 ```
 
 - Auto-runs `fix_quotes` to repair Chinese quotation pairs
 - Renders HTML to `output/<period_end>_<title>.html`
 - Opens it in the browser
+- `--template` accepts `light-green` (default) / `classic-blue` / `warm-paper`; the template chosen at Step 0 is passed through here.
+- Appends the end-of-run cost line (`<!-- cost: ... -->`, see `../../references/cost-gate.md`).
 
 **Reporting checklist**:
 - File path
 - Character count / items per sub-section
 - Source URL list grouped by the 4 sub-sections
 - Reminder: human review of every number and URL is required before publishing — AI output ≠ conclusion
+- Cost line: actual tokens / channel / cost or `unmetered`, compared with the estimate
 
 ## Tool-call mapping (cross-LLM adaptation)
 
@@ -224,6 +239,6 @@ python3 -m pip install --user jinja2
 - **Sub-section items must be strictly in-window.** Any item whose event_date falls outside `[period_start, period_end]` must be cut or moved to the focus body as labeled background (with an explicit time tag).
 - **Every search must include a time filter.** Searching without `after:/before:` lets the engine return SEO-weighted older content — this is the root cause of stale briefings.
 - **Do not skip Step 3 (direction confirmation).** Writing 5,000 characters in the wrong direction wastes the user's review budget.
-- **Do not produce a briefing on a refused subject** (politics / military / religion / celebrity gossip / inherently controversial topics). Reply `Out of scope. (超出能力范围)` and stop.
+- **Do not collapse a political / military / religious / geopolitical / identity / contested subject into a one-line shutdown.** Handle it with the multi-source side-by-side rule above; no single-party conclusion.
 - **Do not pad the briefing with non-substantive narration** ("令人震惊" / "标志着" / "势必"). Keep it factual, dense, source-anchored.
 - **Do not omit human-review reminder in Step 5.** AI output is draft material, not a publishable conclusion.

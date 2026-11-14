@@ -21,6 +21,7 @@ from typing import Optional
 from urllib.parse import quote
 
 import config
+from magpie_client import MagpieClient, MagpieError, is_configured as magpie_configured
 
 # 关掉 pypdf 的 "Ignoring wrong pointing object" 类警告 —— 教科书 PDF 内部 xref
 # 表常有非标准条目，pypdf 自动忽略不影响输出，但默认会刷屏污染 Terminal
@@ -361,10 +362,20 @@ def parse_jwt_exp(token: str) -> Optional[int]:
 
 
 def validate_token(token: str) -> tuple:
-    """返回 (是否有效, 提示信息, 剩余天数)。"""
+    """返回 (是否有效, 提示信息, 剩余天数或 None)。
+
+    兼容官方现行 `sk-` 开头的 API key（非 JWT）：解析不出 exp 时**放行**，
+    由服务端判定；只有成功解析出 exp 才做过期提醒。绝不因「JWT 解析失败」硬拦。
+    """
+    token = (token or "").strip()
+    if not token:
+        return False, "Token missing", None
+
     exp = parse_jwt_exp(token)
     if exp is None:
-        return False, "Token unparseable", 0
+        hint = "sk- API key" if token.startswith("sk-") else "non-JWT token"
+        return True, f"Token configured ({hint}; server-side validation)", None
+
     now = int(time.time())
     days = (exp - now) // 86400
     if exp <= now:
@@ -613,7 +624,7 @@ def process_excel_sidecar(src: Path, logger: Optional[logging.Logger] = None) ->
 
     01 里只有一个 <stem>.md：含 frontmatter（source 双链回 02 的 xlsx）+ sheet 列表。
     用户想看真表 → 点 frontmatter 里 source 双链 → Obsidian 用 sheet-plus 打开 02 文件。
-    Claude 检索时 grep 这个 .md 找得到。
+    LLM 检索时 grep 这个 .md 找得到。
     """
     target_md = compute_target_path(src, config.SOURCE_DIR, config.TARGET_DIR)
     target_md.parent.mkdir(parents=True, exist_ok=True)
@@ -963,37 +974,26 @@ def _pptx_chart_to_md(chart) -> str:
     return title + "\n".join(lines)
 
 
-def ocr_image_via_claude(img_path: Path, logger: Optional[logging.Logger] = None) -> str:
-    """用 claude -p 的 Read 工具 OCR 一张图片，返回转写文本。失败/空返回 ""（不抛）。
-    复用用户 Claude Code 订阅，无需 ANTHROPIC_API_KEY、不烧 MinerU quota。
+def ocr_image_via_magpie(img_path: Path, logger: Optional[logging.Logger] = None) -> str:
+    """经本机 magpie 视觉通道 OCR 一张图片，返回转写文本。失败/空返回 ""（不抛）。
+
+    走免费视觉通道（MAGPIE_MODEL_VISION，默认回落 MAGPIE_MODEL_FAST），不烧 MinerU
+    quota；地址/模型/key 全部来自 .env，绝不打印 key。失败只降级为图片引用，不阻塞转换。
     """
-    if shutil.which(config.ENRICH_CLAUDE_CMD) is None:
-        return ""
-    abspath = str(img_path.resolve())
-    prompt = (
-        f"Use your Read tool to open the image at {abspath} and transcribe ALL text, "
-        f"numbers and data you see, preserving structure (render any tables as Markdown). "
-        f"Output ONLY the transcription, no commentary. If there is no readable text, "
-        f"output nothing."
-    )
-    try:
-        result = subprocess.run(
-            [config.ENRICH_CLAUDE_CMD, "-p", prompt],
-            capture_output=True, text=True, timeout=config.OCR_TIMEOUT_SEC,
-        )
-    except subprocess.TimeoutExpired:
+    if not magpie_configured():
         if logger:
-            logger.warning(f"  ⚠ OCR {img_path.name} 超时（{config.OCR_TIMEOUT_SEC}s）")
+            logger.warning("  ⚠ magpie 未配置（MAGPIE_BASE_URL / MAGPIE_MODEL_FAST），跳过图片 OCR")
+        return ""
+    try:
+        return MagpieClient(logger).ocr_image(img_path)
+    except MagpieError as exc:
+        if logger:
+            logger.warning(f"  ⚠ OCR {img_path.name} 失败: {exc}")
         return ""
     except Exception as exc:
         if logger:
             logger.warning(f"  ⚠ OCR {img_path.name} 调用异常: {exc}")
         return ""
-    if result.returncode != 0:
-        if logger:
-            logger.warning(f"  ⚠ OCR {img_path.name} 失败 (exit {result.returncode})")
-        return ""
-    return result.stdout.strip()
 
 
 def convert_pptx(
@@ -1003,7 +1003,7 @@ def convert_pptx(
     每页：标题/正文文字 + 表格 + 嵌入图片（抽到 attachments/<stem>/，可选 OCR）+ 备注。
 
     「智能 OCR」（见 config）：图片按内容去重只 OCR 一次、跳过装饰小图、唯一内容图并发跑，
-    避免每张装饰 logo 都串行起一个 claude 子进程（慢的根因）。
+    避免每张装饰 logo 都串行发起一次 magpie 请求（慢的根因）。
     返回 (md_content, slide 数, 图片引用数)。
     """
     import hashlib
@@ -1076,7 +1076,7 @@ def convert_pptx(
                 f"跳过 {n_skipped_small} 张装饰小图..."
             )
         with ThreadPoolExecutor(max_workers=config.OCR_MAX_WORKERS) as ex:
-            futs = {ex.submit(ocr_image_via_claude, p, logger): h
+            futs = {ex.submit(ocr_image_via_magpie, p, logger): h
                     for h, p in ocr_targets.items()}
             for fut in futs:
                 try:
@@ -1488,7 +1488,7 @@ def prepare_transcribe(
     不转的移进 skipped（带可操作原因），返回要转的文件列表。
 
     交互逻辑（用户要求）：无论平台，首次都先问「是否转写 + 选哪个模型档」并告知下载大小；
-    选择记进 .env 不再追问；非交互（claude -p）不擅自下 GB 级模型，提示先在终端跑一次。
+    选择记进 .env 不再追问；非交互（脚本子进程）不擅自下 GB 级模型，提示先在终端跑一次。
     """
     if not new_transcribe:
         return []
@@ -1539,15 +1539,17 @@ def enrich_frontmatter(
     src: Path,
     logger: Optional[logging.Logger] = None,
 ) -> bool:
-    """调 `claude -p` 给已写出的 MD frontmatter 追加 abstract / auto_tags /
+    """经本机 magpie 免费通道给已写出的 MD frontmatter 追加 abstract / auto_tags /
     synonyms / key_data。**只动 frontmatter，不动正文**。失败时不抛、不阻塞。
-    返回是否成功 enrich。
+    地址/模型/key 全部来自 .env；绝不打印 key。返回是否成功 enrich。
     """
     if not config.ENRICH_FRONTMATTER:
         return False
-    if shutil.which(config.ENRICH_CLAUDE_CMD) is None:
+    if not magpie_configured():
         if logger:
-            logger.warning(f"  ⚠ '{config.ENRICH_CLAUDE_CMD}' 不在 PATH，跳过 enrich")
+            logger.warning(
+                "  ⚠ magpie 未配置（MAGPIE_BASE_URL / MAGPIE_MODEL_FAST），跳过 enrich"
+            )
         return False
 
     try:
@@ -1578,30 +1580,22 @@ def enrich_frontmatter(
     )
 
     try:
-        result = subprocess.run(
-            [config.ENRICH_CLAUDE_CMD, "-p", prompt],
-            capture_output=True,
-            text=True,
-            timeout=config.ENRICH_TIMEOUT_SEC,
+        yaml_snippet = MagpieClient(logger).chat(
+            prompt,
+            model=config.MAGPIE_MODEL_FAST,
+            max_tokens=config.ENRICH_MAX_TOKENS,
+            temperature=0.2,
         )
-    except subprocess.TimeoutExpired:
+    except MagpieError as exc:
         if logger:
-            logger.warning(f"  ⚠ enrich {md_path.name} 超时（{config.ENRICH_TIMEOUT_SEC}s）")
+            logger.warning(f"  ⚠ enrich {md_path.name} 失败: {exc}")
         return False
     except Exception as exc:
         if logger:
             logger.warning(f"  ⚠ enrich {md_path.name} 调用异常: {exc}")
         return False
 
-    if result.returncode != 0:
-        if logger:
-            logger.warning(
-                f"  ⚠ enrich {md_path.name} 失败 (exit {result.returncode}): "
-                f"{result.stderr.strip()[:200]}"
-            )
-        return False
-
-    yaml_snippet = result.stdout.strip()
+    yaml_snippet = (yaml_snippet or "").strip()
     # 防御：去掉模型可能误加的 ``` 围栏
     if yaml_snippet.startswith("```"):
         yaml_snippet = re.sub(r"^```[\w]*\n?", "", yaml_snippet)
@@ -1639,11 +1633,18 @@ def report_skipped(
     """
     unsupported = [(p, r) for p, r in skipped if r.startswith("unsupported")]
     oversize = [(p, r) for p, r in skipped if "exceeds" in r]
-    if not unsupported and not oversize:
+    mineru_skipped = [(p, r) for p, r in skipped if r.startswith("mineru")]
+    if not unsupported and not oversize and not mineru_skipped:
         return
 
     logger.info("")
     logger.info("════════════ ⚠️  有文件未被转换，请注意 ════════════")
+    if mineru_skipped:
+        logger.info(f"【MinerU 云端未执行】共 {len(mineru_skipped)} 个文件（not silently dropped）：")
+        for p, reason in mineru_skipped:
+            logger.info(f"  • {p.relative_to(source_dir)} → {reason}")
+            logger.info("      → 到 https://mineru.net 申请官方 API token 写入 scripts/.env，")
+            logger.info("        或明确确认跳过这几类文件；本地转换器不受影响。")
     if unsupported:
         from collections import defaultdict
         by_ext: dict[str, list[Path]] = defaultdict(list)
@@ -1793,15 +1794,42 @@ def ensure_clickable_launcher(
 
 
 def _write_env_file(env_path: Path, source_dir, target_dir, token: str = "") -> None:
-    """把首次运行向导收集到的配置写进 .env（config.load_dotenv 下次会读它）。"""
-    lines = [
-        "# local-vault 配置（首次运行向导生成）",
-        f"KB_SOURCE_DIR={source_dir}",
-        f"KB_TARGET_DIR={target_dir}",
-    ]
+    """把首次运行向导收集到的配置合并进 .env（保留已有键，尤其不覆盖 MINERU_TOKEN）。
+
+    只做键级 upsert，不清空文件、不回显 token；config.load_dotenv 下次会读它。
+    """
+    updates = {
+        "KB_SOURCE_DIR": str(source_dir),
+        "KB_TARGET_DIR": str(target_dir),
+    }
     if token:
-        lines.append(f"MINERU_TOKEN={token}")
-    env_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        updates["MINERU_TOKEN"] = token
+
+    existing: list[str] = []
+    if env_path.exists():
+        existing = env_path.read_text(encoding="utf-8").splitlines()
+
+    seen: set[str] = set()
+    out: list[str] = []
+    for line in existing:
+        stripped = line.strip()
+        if stripped and not stripped.startswith("#") and "=" in stripped:
+            key = stripped.split("=", 1)[0].strip()
+            if key in updates:
+                out.append(f"{key}={updates[key]}")
+                seen.add(key)
+                continue
+        out.append(line)
+    if not out:
+        out.append("# local-vault 配置（首次运行向导生成）")
+    for key, value in updates.items():
+        if key not in seen:
+            out.append(f"{key}={value}")
+    env_path.write_text("\n".join(out).rstrip() + "\n", encoding="utf-8")
+    try:
+        env_path.chmod(0o600)
+    except OSError:
+        pass
 
 
 def first_run_setup() -> bool:
@@ -1831,7 +1859,18 @@ def first_run_setup() -> bool:
     src.mkdir(parents=True, exist_ok=True)
     tgt.mkdir(parents=True, exist_ok=True)
 
-    print("\n3) MinerU token（可选；只为处理老 .doc/.ppt、扫描件、图片。回车跳过）")
+    print("\n3) MinerU 官方 API token（可选 / optional）")
+    print("   ── 中文 ──")
+    print("   用途：仅用于扫描版 PDF、老 .doc/.ppt、图片的云端 OCR 兜底；")
+    print("   不填也能使用全部本地功能，这几类文件会被跳过并在报告末尾列明。")
+    print("   ⚠️ 请先到 https://mineru.net 控制台申请官方 API token，然后在此输入。")
+    print("   官方现行发放的 key 可能以 sk- 开头（不是 JWT），请原样粘贴，不要自行转换。")
+    print("   ── English ──")
+    print("   Purpose: cloud OCR fallback ONLY for scanned PDFs, legacy .doc/.ppt and images.")
+    print("   All local features work without it; those file types are skipped and listed at the end.")
+    print("   ⚠️ Apply for an official API token at https://mineru.net (console), then paste it here.")
+    print("   Current official keys may start with sk- (not a JWT); paste as-is, do not convert.")
+    print("   （直接回车 = 暂不配置 / press Enter to skip）")
     try:
         token = input("   token: ").strip()
     except (EOFError, KeyboardInterrupt):
@@ -1849,11 +1888,93 @@ def first_run_setup() -> bool:
     else:
         print("  2. 再运行一次 python3 sync.py → 自动转 Markdown")
     print(f"  3. 产出的 .md 在：{tgt}")
-    print("     用 Obsidian 打开它阅读，或在 Claude 里基于它问答")
+    print("     用 Obsidian 打开它阅读，或在任意 LLM 终端里基于它问答")
     print("  · 想重转某个文件：先删掉 vault 里对应的 .md 再运行")
     print("  · 不支持的类型（音视频 / iWork / 压缩包等）运行后会在末尾提示怎么处理")
     print("─" * 56 + "\n")
     return True
+
+
+def preflight_cost_card(files: int, mineru_candidates: int, logger: logging.Logger) -> bool:
+    """local-vault 开工前的三级闸口（免费 batch = L2；MinerU = L3）。
+
+    单文件免费转换：打印一句话卡后直接开工（用户已显式运行命令）。
+    批量（>1 文件）：TTY 下要明确 yes；非交互需 COST_CONFIRM=1，否则不开工。
+    """
+    level = 2 if files > 1 else 1
+    if mineru_candidates:
+        level = 3
+    logger.info("=== COST ESTIMATE / 预估卡 ===")
+    logger.info(f"Mode / 模式:            local-vault · {files} file(s) · gate L{level}")
+    logger.info("Template / 模板:        n/a (local-vault); reports default light-green")
+    logger.info(
+        f"Channels / 通道:        free {config.MAGPIE_MODEL_FAST or '(MAGPIE_MODEL_FAST unset)'} — ¥0"
+    )
+    logger.info(f"Cloud upload / 云端:    {'MinerU (level 3, separate confirmation)' if mineru_candidates else 'none'}")
+    logger.info(
+        f"Budget / 预算:          per-run ¥{config.COST_MAX_PER_RUN_CNY:g} · "
+        f"month ¥{config.COST_MAX_MONTH_CNY:g}"
+    )
+    if not config.MAGPIE_BASE_URL or not config.MAGPIE_MODEL_FAST:
+        logger.warning(
+            "  ⚠ magpie 未配置：frontmatter enrich / 图片 OCR 会跳过（本地转换不受影响）。"
+            " 见 scripts/.env.example。"
+        )
+    if mineru_candidates and not config.MINERU_TOKEN:
+        logger.warning(
+            "  ⚠️ MinerU / 云端 OCR：需要 MINERU_TOKEN，当前未配置。"
+            " 请先到 https://mineru.net 控制台申请官方 API token，"
+            "写入 skills/local-vault/scripts/.env；或明确确认跳过这些文件。"
+        )
+    if files <= 1:
+        logger.info("  → single file: proceeding; any cloud step still needs its own L3 confirmation.")
+        return True
+
+    confirmed = os.getenv("COST_CONFIRM", "").strip().lower() in {"1", "true", "yes", "on"}
+    if not confirmed and sys.stdin.isatty():
+        try:
+            answer = input("确认开工？/ Proceed with this batch? [y/N] ").strip().lower()
+        except (EOFError, KeyboardInterrupt):
+            answer = ""
+        confirmed = answer in {"y", "yes", "好", "确认", "开工"}
+    if not confirmed:
+        logger.error(
+            "GATE: batch sync not confirmed. Re-run in a terminal and answer yes, "
+            "or set COST_CONFIRM=1 after reviewing the card."
+        )
+    return confirmed
+
+
+def confirm_mineru_cloud(files: list[Path], logger: logging.Logger) -> bool:
+    """MinerU = 云端上传 = 三级闸口：必须逐项单独确认，且 token 存在。
+
+    缺失 token 时明确提示申请入口并跳过（不静默）；非交互需 MINERU_CONFIRM=1
+    或命令行 --confirm-mineru。默认不批准。
+    """
+    logger.info("=== [L3 · separate confirmation] Cloud upload: MinerU ===")
+    logger.info(f"  Files / 文件数: {len(files)}")
+    if not config.MINERU_TOKEN:
+        logger.warning(
+            "  ⚠️ MinerU 需要 MINERU_TOKEN，当前未配置。"
+            " 请先到 https://mineru.net 控制台申请官方 API token，"
+            "写入 skills/local-vault/scripts/.env；或明确确认跳过这些文件。"
+        )
+        logger.warning("  → 未配置 token：跳过云端步骤，文件将在末尾列明（not silent）。")
+        return False
+
+    confirmed = config.MINERU_CONFIRM or "--confirm-mineru" in sys.argv
+    if not confirmed and sys.stdin.isatty():
+        try:
+            answer = input("  确认上传这些文件到 MinerU 云端？/ Confirm cloud upload? [y/N] ").strip().lower()
+        except (EOFError, KeyboardInterrupt):
+            answer = ""
+        confirmed = answer in {"y", "yes", "好", "确认"}
+    if not confirmed:
+        logger.warning(
+            "  → 云端上传未确认（默认不走）：跳过 MinerU，文件将在末尾列明。"
+            " 非交互请设 MINERU_CONFIRM=1。"
+        )
+    return confirmed
 
 
 def main() -> int:
@@ -1866,7 +1987,7 @@ def main() -> int:
     # 注意：MINERU_TOKEN 在真正需要调 MinerU 时才校验（见 Stage 3）。
     # 这样只有 Excel 或纯数字 PDF 的同步即使 token 未设也能跑完。
 
-    # 没配好源/目标目录：终端里走交互向导；非交互（Claude 子进程等）保持报错
+    # 没配好源/目标目录：终端里走交互向导；非交互（脚本子进程等）保持报错
     if not config.SOURCE_DIR.exists() or not config.TARGET_DIR.exists():
         if sys.stdin.isatty():
             ok = first_run_setup()
@@ -1879,7 +2000,7 @@ def main() -> int:
             logger.error("  → 设环境变量 KB_TARGET_DIR（或在终端直接运行一次走配置向导）")
         return 1
 
-    # 兜底放置双击入口：Claude 帮配 .env 的路径不走向导，这里幂等补上（macOS）
+    # 兜底放置双击入口：脚本/助手帮配 .env 的路径不走向导，这里幂等补上（macOS）
     ensure_clickable_launcher(config.SOURCE_DIR, logger)
 
     today = datetime.now().strftime("%Y-%m-%d")
@@ -1908,6 +2029,19 @@ def main() -> int:
     new_code = find_new_files(buckets["code"], config.SOURCE_DIR, config.TARGET_DIR)
     new_transcribe = find_new_files(buckets["transcribe"], config.SOURCE_DIR, config.TARGET_DIR)
     new_others = find_new_files(buckets["mineru"], config.SOURCE_DIR, config.TARGET_DIR)
+
+    new_total = (
+        len(new_xlsx) + len(new_csv) + len(new_sidecars) + len(new_pdfs)
+        + len(new_pandoc) + len(new_pptx) + len(new_md) + len(new_code)
+        + len(new_transcribe) + len(new_others)
+    )
+    if new_total:
+        if not preflight_cost_card(new_total, len(new_others), logger):
+            return 2
+        if new_pdfs:
+            logger.info(
+                "  Note: 数字版 PDF 走本地 pymupdf4llm；仅扫描件才会触发 MinerU 云端（L3）。"
+            )
 
     orphans = find_orphaned_mds(config.TARGET_DIR, config.SOURCE_DIR)
     logger.info(
@@ -2043,18 +2177,21 @@ def main() -> int:
         return 0 if failed == 0 else 1
 
     # Token 检查只在真正要调 MinerU 时做（sidecar / pymupdf4llm 不需要）
-    if not config.MINERU_TOKEN:
-        logger.error(
-            f"需要 MinerU 转 {len(mineru_files)} 个文件但 MINERU_TOKEN 未设置；"
-            f"sidecar 与 pymupdf4llm 已完成的部分保留"
-        )
-        return 1
+    # MinerU = 云端上传 = 三级闸口：先单独确认，再校验 token（token 值绝不打印）。
+    if not confirm_mineru_cloud(mineru_files, logger):
+        for src in mineru_files:
+            skipped.append((src, "mineru cloud upload not confirmed"))
+        _print_summary(0)
+        return 2
     valid, msg, days = validate_token(config.MINERU_TOKEN)
     if not valid:
         logger.error(f"Token 检查失败: {msg}")
+        for src in mineru_files:
+            skipped.append((src, "mineru token invalid/expired"))
+        _print_summary(0)
         return 1
     logger.info(f"Token: {msg}")
-    if days < 14:
+    if days is not None and days < 14:
         logger.warning(f"⚠️  Token 仅剩 {days} 天，建议尽快更新")
 
     client = MinerUClient(config.MINERU_TOKEN, logger)

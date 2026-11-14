@@ -12,7 +12,7 @@ Single source of truth for the three modes. SKILL.md, workflow.md, CHANGELOG, an
 | **Output length** | 4-5 pages (< 4 视为过薄,需补充) | 12-15 pages (< 12 偏薄) | 30-40 pages / 15k+ words |
 | **Chart count** | 0 | 6-10 | 25-35+ |
 | **Runtime budget** | ~15 min | ~1 h | ~2-3 h |
-| **LLM model** | single (Claude solo) | single (Claude solo) | single or multi-LLM (Claude + GPT critique optional) |
+| **Model route** | single magpie route (free-first) | single magpie route (free-first) | single or multi-model via magpie (optional extra review) |
 | **Workflow steps** | 6 | 8 | 11 |
 | **Hard stops** | 0 (soft only) | 1 (sign-off after draft) | 3 (outline / draft / final) |
 | **Citation style** | Markdown footnote (`^[org, title, date. URL.]`) | Markdown footnote (or .bib if heavy queued) | BibTeX (`references.bib`) + APA via Quarto |
@@ -22,7 +22,7 @@ Single source of truth for the three modes. SKILL.md, workflow.md, CHANGELOG, an
 | **HTML publication derivation** | ❌ | ❌ | ✅ |
 | **Project scaffolding depth** | minimal (4 files) | medium (`5_scripts/_path.py` + numbered dirs) | full 10-numbered-dir + local skill copy |
 | **Chart template** | n/a (no charts) | shared `chart_template.py` | shared `chart_template.py` |
-| **Onboarding questions** | 1 (hypothesis only) | 2-3 (hypothesis + optional second hard stop) | 6-7 (hypothesis + multi-LLM decision + Quarto reuse + audience + bib readiness + output formats + LLM mix) |
+| **Onboarding questions** | 2 (hypothesis + template/cost card) | 3-4 (hypothesis + optional second hard stop + template/cost card) | 6-7 (hypothesis + magpie multi-model decision + Quarto reuse + audience + bib readiness + output formats + model mix) |
 
 ## Per-mode file dependencies
 
@@ -74,6 +74,7 @@ Edit this file (and bump the skill's minor version) whenever:
 - A mode adds / removes a derivation format
 - A mode's workflow file is split, merged, or renamed
 - A new mode is introduced
+- The cost-gate level or default template changes
 
 Propagation order after edit:
 1. **MODE_REGISTRY.md** (this file) — change source-of-truth

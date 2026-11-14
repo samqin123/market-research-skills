@@ -18,7 +18,7 @@ Full rules and output formats: see [SKILL.md](SKILL.md). A Chinese reference of 
 
 ## Core rules (summary)
 
-- **Scope exclusions**: refused topics include politics, military, religion, entertainment celebrity gossip, and other inherently controversial subjects. The skill replies "Out of scope" and stops — no verification is attempted.
+- **Controversial topics are in scope**: political / military / religious / geopolitical / identity / other contested statements are verified under the same whitelist and presented with multiple authoritative sources side by side, each attributed to its standpoint — never a single-party conclusion.
 - **Whitelisted sources**: user-supplied files → official websites & authoritative databases (IMF / World Bank / IEA / FRED / etc.) → authoritative industry sources (NBER, think tanks, investment bank research, mainstream financial media) → aggregator databases (Statista / Wind / CEIC / SWFI / Refinitiv).
 - **Give-up criterion**: keep tracing until either a whitelisted source is located, or the obvious paths are exhausted — then plainly say "cannot verify." No fixed depth budget.
 - **Download originals locally**: any cited report / chart / dataset must be downloaded and fully read before a verdict. If download is blocked, hand the link to the user and ask for help.
@@ -69,7 +69,7 @@ For non-Claude terminals (Codex / Gemini / Copilot), unzip the `.zip` file and p
 
 ## 核心规则（摘要）
 
-- **范围排除**：拒绝核实政治 / 军事 / 宗教 / 娱乐明星八卦 / 其他天然具有争议性的议题。skill 直接回复「超出能力范围」并停止，不做任何核实尝试
+- **争议话题在范围内**：政治 / 军事 / 宗教 / 地缘 / 身份认同 / 其他争议陈述均可核实。按同一白名单核实，多个权威来源并列并注明立场归属——不下单方结论
 - **白名单来源**：用户提供文件 → 官方网站与权威数据库（IMF / World Bank / IEA / FRED 等）→ 权威行业信息源（NBER、智库、投行 Research、主流财经媒体）→ 聚合数据库（Statista / Wind / CEIC / SWFI / Refinitiv）
 - **放弃判定标准**：持续溯源直到找到白名单内一手来源，或主流路径都试过仍未命中——直接说「无法核实」。无固定层数预算
 - **下载原文通读**：涉及报告 / 图表 / 数据时必须下载原文通读；下载受阻时把链接交给用户、请用户协助

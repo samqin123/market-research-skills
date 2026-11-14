@@ -1,0 +1,44 @@
+[2026-11-14 02:44:26] === Sync started ===
+[2026-11-14 02:44:26] 扫描 /tmp/mrs-mineru-missing/source...
+[2026-11-14 02:44:26]   扫描到 1 个候选文件，0 个跳过
+[2026-11-14 02:44:26] === COST ESTIMATE / 预估卡 ===
+[2026-11-14 02:44:26] Mode / 模式:            local-vault · 1 file(s) · gate L3
+[2026-11-14 02:44:26] Template / 模板:        n/a (local-vault); reports default light-green
+[2026-11-14 02:44:26] Channels / 通道:        free group/free-first — ¥0
+[2026-11-14 02:44:26] Cloud upload / 云端:    MinerU (level 3, separate confirmation)
+[2026-11-14 02:44:26] Budget / 预算:          per-run ¥20 · month ¥200
+[2026-11-14 02:44:26]   ⚠️ MinerU / 云端 OCR：需要 MINERU_TOKEN，当前未配置。 请先到 https://mineru.net 控制台申请官方 API token，写入 skills/local-vault/scripts/.env；或明确确认跳过这些文件。
+[2026-11-14 02:44:26]   → single free file: proceeding (one-shot local path).
+[2026-11-14 02:44:26]   待转 — xlsx: 0, csv: 0, xls sidecar: 0, PDF: 0, pandoc(docx/rtf/odt/epub/html): 0, pptx: 0, md/txt: 0, code: 0, 音视频转写: 0, MinerU(.doc/.ppt/html/图片): 1, 孤儿: 0
+[2026-11-14 02:44:26] === [L3 · separate confirmation] Cloud upload: MinerU ===
+[2026-11-14 02:44:26]   Files / 文件数: 1
+[2026-11-14 02:44:26]   ⚠️ MinerU 需要 MINERU_TOKEN，当前未配置。 请先到 https://mineru.net 控制台申请官方 API token，写入 skills/local-vault/scripts/.env；或明确确认跳过这些文件。
+[2026-11-14 02:44:26]   → 未配置 token：跳过云端步骤，文件将在末尾列明（not silent）。
+[2026-11-14 02:44:26] === Summary ===
+[2026-11-14 02:44:26]   Scanned: 2
+[2026-11-14 02:44:26]   Skipped: 1
+[2026-11-14 02:44:26]   Excel 内容 (xlsx): 0
+[2026-11-14 02:44:26]   CSV/TSV: 0
+[2026-11-14 02:44:26]   Excel sidecar (.xls): 0
+[2026-11-14 02:44:26]   pandoc (docx/rtf/odt/epub/html): 0
+[2026-11-14 02:44:26]   PPT (pptx→python-pptx): 0
+[2026-11-14 02:44:26]   Markdown/文本 直拷: 0
+[2026-11-14 02:44:26]   代码/结构化文本: 0
+[2026-11-14 02:44:26]   音视频转写 (whisper): 0
+[2026-11-14 02:44:26]   pymupdf4llm 直出: 0
+[2026-11-14 02:44:26]   MinerU 处理: 0
+[2026-11-14 02:44:26]     其中 PDF fallback: 0
+[2026-11-14 02:44:26]     其中 .doc/.ppt/html/图片: 1
+[2026-11-14 02:44:26]   Orphaned: 0
+[2026-11-14 02:44:26]   Success: 0
+[2026-11-14 02:44:26]   Failed: 0
+[2026-11-14 02:44:26]
+[2026-11-14 02:44:26] ════════════ ⚠️  有文件未被转换，请注意 ════════════
+[2026-11-14 02:44:26] 【MinerU 云端未执行】共 1 个文件（not silently dropped）：
+[2026-11-14 02:44:26]   • old.doc → mineru cloud upload not confirmed
+[2026-11-14 02:44:26]       → 到 https://mineru.net 申请官方 API token 写入 scripts/.env，
+[2026-11-14 02:44:26]         或明确确认跳过这几类文件；本地转换器不受影响。
+[2026-11-14 02:44:26] （以上文件留在 02，未生成 01 的 MD；按建议处理后下次 sync 会重新尝试）
+[2026-11-14 02:44:26] ═══════════════════════════════════════════════
+[2026-11-14 02:44:26]
+[2026-11-14 02:44:26] === Sync finished ===

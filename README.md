@@ -6,13 +6,24 @@
 
 A collection of Claude Skills covering the full **market / equity / industry research** workflow: verify a fact against primary sources, spin up a topic briefing, or draft a flagship report — each step is its own skill. Every skill enforces the discipline real analysts live by: cite the original source, flag what can't be verified, never fabricate a number. Use any skill standalone, or chain them into an end-to-end pipeline. Runs in Claude Code / Desktop and ports to other LLM terminals (Codex / Gemini / Copilot).
 
+## Fork adaptation (v2.0.0)
+
+This repository is a **local fork adaptation** of [`genli-ai/market-research-skills`](https://github.com/genli-ai/market-research-skills) v1.7.1, prepared on branch `adapt/v2`. It is **not pushed** to GitHub and has no Release; see [`ADAPT-REPORT.md`](ADAPT-REPORT.md) for the file-level change list and smoke results.
+
+- **Four skills and the upstream structure are preserved** (plugin/marketplace manifests, `pack.sh`, bilingual `.zh.md` mirrors).
+- **Cost plumbing** goes through a local **magpie** OpenAI-compatible gateway (free-first); paid channels are off by default. `references/cost-routing.md`, `references/cost-gate.md`, `references/pricing.md` and `scripts/estimate.py` implement a three-level estimate/confirmation gate, an overrun guard, and an end-of-run consumption line. Budgets live in `.env` (`ALLOW_PAID=0`, per-run ¥20 / month ¥200 defaults).
+- **Controversial topics** are handled with a multi-source side-by-side rule: `verifying` and `topic-brief` require standpoint attribution and no single-party conclusion.
+- **Templates** at `templates/`: `classic-blue` (upstream look, optional), `light-green` (default reading template), `warm-paper` (humanities). Previews use the same sample content. The default byline is blank.
+- **MinerU** is optional and cloud-only; the setup wizard reminds you to apply for an official API token at `https://mineru.net`, and `sk-` non-JWT keys are accepted. Missing tokens are called out on the estimate card, never silently skipped.
+- **Secrets**: real `.env` files are git-ignored; `.env.example` ships placeholders only. No key is printed or committed.
+
 ## Skills currently included
 
 | Skill | Purpose | Typical triggers |
 |---|---|---|
 | [verifying](skills/verifying/) | Trace a statement back to whitelisted primary sources | "verify X" / "is this true" / "find the original source" |
 | [topic-brief](skills/topic-brief/) | Generate a thematic observation briefing (HTML, paste-into-WeChat-ready) for any subject (region / industry / issue / institution) | "做一份 XX 观察" / "generate a briefing on Y" / "/topic-brief" |
-| [analyst-research](skills/analyst-research/) | Three-mode end-to-end research workflow. User picks scope at trigger: **light** (4-5 page memo, 0 charts, ~15 min), **medium** (12-15p topic analysis, 6-10 charts, ~1 h), or **heavy** (flagship 30-40p / 15k+ word report, 25-35+ charts, ~2-3 h, full multi-stage workflow: framing → sourcing → analysis → drafting → review, multi-LLM optional). Reports default to English; the AI replies in the user's chat language. Battle-tested on the Saudi Vision 2030 deep-dive. | "research report" / "投研报告" / "深度分析" / "做研报" / "5-page memo" / "/analyst-research" |
+| [analyst-research](skills/analyst-research/) | Three-mode end-to-end research workflow. User picks scope at trigger: **light** (4-5 page memo, 0 charts, ~15 min), **medium** (12-15p topic analysis, 6-10 charts, ~1 h), or **heavy** (flagship 30-40p / 15k+ word report, 25-35+ charts, ~2-3 h, full multi-stage workflow: framing → sourcing → analysis → drafting → review, optional multi-model via magpie). Reports default to English; the AI replies in the user's chat language. Battle-tested on the Saudi Vision 2030 deep-dive. | "research report" / "投研报告" / "深度分析" / "做研报" / "5-page memo" / "/analyst-research" |
 | [local-vault](skills/local-vault/) | Build & query a local Markdown knowledge base: convert PDF / Office / images / code into retrieval-friendly Markdown (local-first, cloud OCR fallback), then answer questions over the vault with retrieval discipline (coverage self-checks, lossy-content flags, MOC proposals) | "build/sync my local knowledge base" / "convert these files to markdown for AI" / "整理我的资料库" / "本地知识库" |
 
 > The list grows with each release. Full change history in [CHANGELOG.md](CHANGELOG.md).
@@ -111,6 +122,9 @@ market-research-skills/
 ├── .claude-plugin/
 │   ├── plugin.json                 # Plugin manifest
 │   └── marketplace.json            # Marketplace manifest (self-registering)
+├── .env.example                    # magpie / budget / MinerU placeholders (no real keys)
+├── references/                     # Shared cost protocol: routing / gate / pricing (+ .zh.md)
+├── templates/                      # Shared output templates + preview/ (light-green default)
 ├── skills/
 │   └── <skill-name>/
 │       ├── SKILL.md                # Canonical English version (loaded by LLM)
@@ -120,7 +134,9 @@ market-research-skills/
 │       ├── scripts/                # Skill-specific scripts (optional)
 │       └── assets/                 # Static assets (optional)
 ├── scripts/
-│   └── pack.sh                     # Package a skill as a .zip file
+│   ├── pack.sh                     # Package a skill as a .zip file
+│   └── estimate.py                 # Deterministic cost estimate + three-level gate
+├── ADAPT-REPORT.md                 # Fork change list + smoke results
 └── releases/                       # Locally generated .zip artifacts (gitignored)
     └── <skill-name>.zip            # Easy to copy and share directly
 ```
@@ -174,13 +190,24 @@ The `releases/` folder is `.gitignored` — the repo does not store binary artif
 
 一组覆盖**市场研究 / 投研 / 行业分析**完整工作流的 Claude Skills：核实一个事实、产出一份主题简报、撰写一篇旗舰研报——每个环节都是一个独立 skill。每个 skill 都贯彻真实分析师的纪律：引用一手来源、标注无法核实的内容、绝不编造数字。可单独用任一 skill，也可串成端到端流水线。支持 Claude Code / Desktop，并可移植到其他 LLM 终端（Codex / Gemini / Copilot）。
 
+## Fork 改造说明（v2.0.0）
+
+本仓是 [`genli-ai/market-research-skills`](https://github.com/genli-ai/market-research-skills) v1.7.1 的**本地 fork 改造版**，在 `adapt/v2` 分支上完成；**不 push GitHub、不发 Release**。到文件的改动清单与冒烟结果见 [`ADAPT-REPORT.md`](ADAPT-REPORT.md)。
+
+- **保留上游结构**：四个 skill、插件/marketplace 清单、`pack.sh`、英文 canonical + `.zh.md` 镜像全部保留。
+- **成本 plumbing**：脚本内模型调用统一走本机 **magpie**（OpenAI 兼容，免费优先）；付费通道默认关闭。`references/cost-routing.md`、`references/cost-gate.md`、`references/pricing.md` 与 `scripts/estimate.py` 实现三级预估确认、超支守卫与结束消耗行。预算写在 `.env`（`ALLOW_PAID=0`，默认单次 ¥20 / 月度 ¥200）。
+- **争议话题**改走多源并列：`verifying` 与 `topic-brief` 要求注明立场归属、不下单方结论。
+- **模板**在 `templates/`：`classic-blue`（上游原貌，可选）、`light-green`（默认阅读模板）、`warm-paper`（人文）。预览用同一段内容。默认署名为空。
+- **MinerU** 可选且仅云端；首次向导提醒去 `https://mineru.net` 申请官方 API token，兼容 `sk-` 非 JWT key。缺 token 在预估卡单独提示，绝不静默跳过。
+- **密钥**：真实 `.env` 已被 gitignore；只发 `.env.example` 占位。任何 key 不打印、不提交。
+
 ## 当前包含的 Skills
 
 | Skill | 用途 | 典型触发语 |
 |---|---|---|
 | [verifying](skills/verifying/) | 信息核实：把陈述追溯到白名单内的一手来源 | 「帮我核实 X」「这条信息是真的吗」「找一下原始出处」 |
 | [topic-brief](skills/topic-brief/) | 主题观察简报生成器：为任意主题（区域 / 行业 / 议题 / 机构）产出可粘贴公众号的 HTML 简报 | 「做一份 XX 观察 / 简报」「`/topic-brief`」 |
-| [analyst-research](skills/analyst-research/) | 三档端到端研究工作流。用户触发时选档：**light**（4-5 页备忘、0 图、约 15 分钟）/ **medium**（12-15 页主题分析、6-10 图、约 1 小时）/ **heavy**（30-40 页 / 1.5 万字+ 旗舰报告、25-35+ 图、约 2-3 小时、完整多阶段工作流：框定 → 取数 → 分析 → 起草 → 复盘、可选多 LLM 协作）。报告默认英文，AI 按用户聊天语言回复。已在沙特 Vision 2030 深度报告项目跑通。 | 「写研报」「投研报告」「深度分析」「主题分析」「5 页 memo」「`/analyst-research`」 |
+| [analyst-research](skills/analyst-research/) | 三档端到端研究工作流。用户触发时选档：**light**（4-5 页备忘、0 图、约 15 分钟）/ **medium**（12-15 页主题分析、6-10 图、约 1 小时）/ **heavy**（30-40 页 / 1.5 万字+ 旗舰报告、25-35+ 图、约 2-3 小时、完整多阶段工作流：框定 → 取数 → 分析 → 起草 → 复盘、可选经 magpie 多模型）。报告默认英文，AI 按用户聊天语言回复。已在沙特 Vision 2030 深度报告项目跑通。 | 「写研报」「投研报告」「深度分析」「主题分析」「5 页 memo」「`/analyst-research`」 |
 | [local-vault](skills/local-vault/) | 本地 Markdown 知识库：把 PDF / Office / 图片 / 代码转成带检索 frontmatter 的 Markdown（本地优先、云端 OCR 兜底），再基于 vault 负责任地回答问题（覆盖度自检、有损内容标注、MOC 沉淀） | 「整理我的资料库」「把文件转成 md 给 AI 读」「本地知识库」「读我的本地 vault 回答」 |
 
 > 列表会随版本更新。完整变更见 [CHANGELOG.md](CHANGELOG.md)。
@@ -279,6 +306,9 @@ market-research-skills/
 ├── .claude-plugin/
 │   ├── plugin.json                 # 本 repo 作为 Claude Code plugin 的清单
 │   └── marketplace.json            # 本 repo 同时作为 marketplace（自我注册）
+├── .env.example                    # magpie / 预算 / MinerU 占位（无真实 key）
+├── references/                     # 共享成本协议：routing / gate / pricing（含 .zh.md）
+├── templates/                      # 共享输出模板 + preview/（默认 light-green）
 ├── skills/
 │   └── <skill-name>/
 │       ├── SKILL.md                # 英文权威版（被 LLM 加载）
@@ -288,7 +318,9 @@ market-research-skills/
 │       ├── scripts/                # 该 skill 自带的脚本（可选）
 │       └── assets/                 # 静态资源（可选）
 ├── scripts/
-│   └── pack.sh                     # 打包某个 skill 为 .zip 文件
+│   ├── pack.sh                     # 打包某个 skill 为 .zip 文件
+│   └── estimate.py                 # 确定性成本预估 + 三级闸口
+├── ADAPT-REPORT.md                 # fork 改动清单 + 冒烟结果
 └── releases/                       # 本地生成的 .zip 产物（.gitignored）
     └── <skill-name>.zip            # 方便你直接拷贝发给别人
 ```

@@ -6,6 +6,10 @@
 .env
 **/.env
 
+# Local cost ledger — usage history, never committed
+# 本地成本台账 —— 使用记录，绝不入库
+.cost-ledger.jsonl
+
 # Packaged artifacts (regeneratable via scripts/pack.sh; ship via GitHub Release)
 # 打包产物（可由 scripts/pack.sh 重新生成，发 Release 时再附）
 releases/
@@ -16,6 +20,9 @@ releases/
 .vscode/
 .idea/
 *.swp
+
+# Local logs / 本地日志
+**/logs/
 
 # Python
 __pycache__/

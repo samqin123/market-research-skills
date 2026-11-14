@@ -2,13 +2,17 @@
 
 > English is the authoritative version; the Chinese mirror is `workflow_light.zh.md`.
 
-Scope: decision memo / executive brief / internal memo within 4-5 pages. Budget ~15 min, single LLM, 0 hard stops, plain text with no charts, PDF + Word output only.
+Scope: decision memo / executive brief / internal memo within 4-5 pages. Budget ~15 min, single magpie route, 0 hard stops, plain text with no charts, PDF + Word output only.
 
 medium and heavy are sibling modes of the same analyst-research skill, covering 12-15 page topic analysis and 30-40 page / 15k-word+ flagship reports respectively. All three share the hypothesis-lock starting point; downstream differences are governed by each mode.
 
 ---
 
 ## 1. New-project onboarding
+
+### Step 0a — Cost gate + template (required before scaffold)
+
+Run `python3 ../../../scripts/estimate.py --mode light --sources <n>` and show the **level-1** one-line card. `light` is free-channel / single-shot: the user replies one word and work starts. Template choice sits on the same line (`light-green` default; `classic-blue` / `warm-paper` optional; choosing nothing does not block). Do not scaffold or draft before that one word. If the shared script is absent in a packaged install, reproduce the card from `../../../references/cost-gate.md`.
 
 ### Step 0: announce
 
@@ -26,10 +30,10 @@ Items NOT asked (locked by default; the AI must not proactively ask):
 - Length: 4-5 page target (**< 4 pages is too thin and must be backfilled with content or deeper sub-questions**; 6 pages OK; 7-9 pages strong warning + suggest trimming; 10+ pages ask the user to re-assess light vs heavy; never hard-truncate).
 - Charts: **0**, plain text + inline footnote citations.
 - Audience: **expert / decision-maker** (not dual-audience, no explainer background).
-- LLM: single LLM (Claude solo throughout).
+- Model route: single magpie route (free-first throughout).
 - Summary form: **BLUF** (bottom line up front, single paragraph, 80-150 words / characters giving conclusion + key numbers + so-what).
 - Time expectation: ~15 min, single session.
-- Author byline / email: read the default from the global `~/.claude/CLAUDE.md` "author byline" section; ask explicitly only if absent.
+- Author byline / email: **default blank**; ask only if the user wants a byline. Never insert a built-in signature.
 
 ### Step 1: scaffold
 
@@ -91,11 +95,11 @@ Soft-stop into step 2 without waiting for user confirmation.
 | Step | Name | Lead | Time budget |
 |---|---|---|---|
 | 1 | hypothesis | user + AI restatement | 5 min |
-| 2 | search | Claude solo | 25 min |
-| 3 | plan | Claude solo | 5 min |
-| 4 | draft | Claude solo | 20 min |
-| 5 | self-check | Claude solo | 10 min |
-| 6 | freeze | Claude | 5 min |
+| 2 | search | magpie free-first route | 25 min |
+| 3 | plan | magpie free-first route | 5 min |
+| 4 | draft | magpie free-first route | 20 min |
+| 5 | self-check | magpie free-first route | 10 min |
+| 6 | freeze | the magpie-routed AI | 5 min |
 
 **All soft stops (0 hard stops)** — after each step lands, the AI briefly tells the user the stage output and immediately proceeds. The user can stop, redirect, or roll back at any time.
 
@@ -417,7 +421,7 @@ Do not mix them up. The table draws the clean line:
 | Length | 4-5 pages / 2500-3000 chars | 30-40 pages / 15k+ words |
 | Charts | 0 | usually 25+, one script per chart |
 | Citation | inline footnote | references.bib |
-| LLM | single LLM only | single / multi-LLM optional |
+| Model route | single magpie route only | single / magpie multi-model optional |
 | Hard stops | 0 | 3 (outline / draft / final) |
 | Derivations | PDF + Word | PDF + Word + HTML + WeChat |
 | Retrospective | none | mandatory (§11.2 audit) |

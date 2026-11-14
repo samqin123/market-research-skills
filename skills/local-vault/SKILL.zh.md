@@ -22,11 +22,13 @@
    ```
 2. **pandoc**(docx/rtf/odt/epub):`brew install pandoc`。
 3. **ffmpeg**(仅音视频转写用):`brew install ffmpeg`。whisper **引擎按平台自动选**——Apple Silicon 用 `mlx-whisper`(GPU)、其它平台用 `faster-whisper`(跨平台 CPU/CUDA)——并在首次运行**征得用户同意后自动安装**(无需手动 pip)。首次遇到音视频时,工具会列出模型档大小(tiny ~75MB / small ~480MB / turbo ~1.6GB / large-v3 ~3GB)让用户选或跳过;选择写进 `.env`(`KB_WHISPER_MODEL`),之后不再追问。全本地、零 token/配额;模型只下一次,之后离线。
-4. **PATH 上要有 `claude` CLI** —— 管线 shell out `claude -p` 做 frontmatter 富化和 PPT 图片 OCR;没有就跳过这两步(不致命)。
+4. **magpie 网关** —— 脚本内所有 LLM 调用(frontmatter 富化、PPT 图片 OCR)统一走本机 **magpie** OpenAI 兼容网关。在 `scripts/.env` 配 `MAGPIE_BASE_URL`、`MAGPIE_API_KEY`(可选)、`MAGPIE_MODEL_FAST` / `MAGPIE_MODEL_VISION`(见 `.env.example`)。默认免费优先;不写死、不打印任何 key。网关缺失/不可达时这两步跳过(不致命),转换照常落地。成本口径见 `../../references/cost-routing.md`。
 5. **配路径**——两种方式:
    - **向导(推荐给用户):** 直接在终端 `python3 scripts/sync.py`。首次运行(还没配)会弹**交互向导**:问原始文件目录 + vault 目录(+ 可选 MinerU token),自动建目录、写 `scripts/.env`、并打印用法;然后再跑一次就开始转换。
-   - **手动:** `scripts/.env.example` 复制成 `scripts/.env`,填 `KB_SOURCE_DIR` / `KB_TARGET_DIR`(绝对路径)。`MINERU_TOKEN` 可选(只在老 .doc/.ppt、扫描件、图片时需要,https://mineru.net 拿)。
-   - **Claude 替用户配时走手动**:向导只在交互 TTY 触发,而 `claude -p` 子进程不是 TTY——所以你(Claude)应直接问两个目录再写 `scripts/.env`。
+   - **手动:** `scripts/.env.example` 复制成 `scripts/.env`,填 `KB_SOURCE_DIR` / `KB_TARGET_DIR`(绝对路径),并配 `MAGPIE_*`。
+   - **MinerU token 可选且仅用于云端兜底:** 只处理扫描版 PDF、老 `.doc`/`.ppt`、图片。**请先到 https://mineru.net 控制台申请官方 API token,再填 `MINERU_TOKEN`。** 不填也能用全部本地功能;这几类文件会被跳过并在末尾列明。官方现行 key 可能以 `sk-` 开头(不是 JWT),原样粘贴即可。首次向导会中英双语提醒。
+   - **AI 替用户配时走手动**:向导只在交互 TTY 触发,脚本子进程不是 TTY——所以应直接问两个目录再写 `scripts/.env`。绝不回显 token。
+   - **成本闸口:** 批量同步前按 `../../references/cost-gate.md` 出预估卡。批量 = 二级(明确 yes);MinerU = 云端上传 = 三级(单独确认;非交互需 `MINERU_CONFIRM=1`)。token 缺失必须在卡上单独提示,不得静默跳过。
 
 ### 运行
 
@@ -58,7 +60,7 @@ python3 scripts/sync.py
 
 ### PPT 智能 OCR
 
-幻灯片里的图片用 `claude -p`(Read 工具读图)OCR,但为避免每张装饰 logo 都起一个慢 claude:同图去重(只 OCR 一次)、跳过 < `OCR_MIN_IMAGE_BYTES` 的小图、唯一内容图 `OCR_MAX_WORKERS` 并发。原生 PowerPoint **图表对象**直接读(类别 + series 数值 → 表)。`OCR_PPTX_IMAGES = False` 可整个关掉 OCR(图片仍抽取 + 引用)。
+幻灯片里的图片经 **magpie** 视觉通道 OCR,但为避免每张装饰 logo 都发一次慢请求:同图去重(只 OCR 一次)、跳过 < `OCR_MIN_IMAGE_BYTES` 的小图、唯一内容图 `OCR_MAX_WORKERS` 并发。原生 PowerPoint **图表对象**直接读(类别 + series 数值 → 表)。`OCR_PPTX_IMAGES = False` 可整个关掉 OCR(图片仍抽取 + 引用)。失败记日志并降级为图片引用,不硬停。
 
 ### Frontmatter
 
@@ -67,7 +69,7 @@ python3 scripts/sync.py
 source: "[[…/<file>.<ext>]]"   # 回原文件双链
 source_type: pdf | xlsx | docx | pptx | md | …
 converted_by: pymupdf4llm | pandoc | python-pptx | excel-openpyxl | csv | passthrough | whisper | "MinerU vlm" | …
-# enrich（claude -p 尽力而为，失败可能缺）:
+# enrich（经 magpie 免费优先通道尽力而为，失败可能缺）:
 abstract: |
   3 句话总结。
 auto_tags: [..]
@@ -127,6 +129,7 @@ find "$KB_TARGET_DIR" -name "*.md" -not -path "*/.obsidian/*" | wc -l
 
 ## 备注
 
-- 管线**不依赖** Claude 会话运行——它是 CLI,只在可选的 enrich/OCR 步 shell out `claude -p`。
+- 管线**不依赖** Claude 会话运行——它是 CLI,只在可选的 enrich/OCR 步调用本机 magpie 网关。
+- 所有模型调用经 magpie(免费优先);key 与模型名在 `scripts/.env`。付费升级默认关闭(`ALLOW_PAID=0`),开启也需三级确认。MinerU 云端 OCR 是独立的三级确认。
 - 永不改文档**正文**——所有自动化只动 frontmatter,工具本身零内容丢失风险。
 - 有测试覆盖的 canonical 源码在作者的 dev 项目里;这里的 `scripts/` 是打包快照。

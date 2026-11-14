@@ -1,6 +1,6 @@
 ---
 name: analyst-research
-description: 为投资分析师与政策研究者设计的端到端研究工作流 skill。三档 mode 由用户在触发时选择 —— light（4-5 页决策备忘，约 15 分钟，0 图）、medium（12-15 页主题分析，约 1 小时，6-10 图）、heavy（30-40 页 / 1.5 万字+ 旗舰报告，约 2-3 小时，25-35+ 图，多阶段工作流，可多 LLM，PDF + Word + 公众号 + HTML 派生）。报告默认英文；AI 按用户聊天语言回复。已在真实宏观 / 政策 / 股票研报（如沙特 Vision 2030 深度报告）实战验证。触发：用户输入 /analyst-research、/flagship-research，或描述「做研报、投研报告、主题分析、深度分析、research report、topic analysis、investment research、policy assessment、industry deep-dive」类需求。不适用：单条新闻评论（用 topic-brief）、slide deck（用 deckster-slide-generator）、一次性快问快答。
+description: 为投资分析师与政策研究者设计的端到端研究工作流 skill。三档 mode 由用户在触发时选择 —— light（4-5 页决策备忘，约 15 分钟，0 图）、medium（12-15 页主题分析，约 1 小时，6-10 图）、heavy（30-40 页 / 1.5 万字+ 旗舰报告，约 2-3 小时，25-35+ 图，多阶段工作流，可经 magpie 多模型，PDF + Word + 公众号 + HTML 派生）。报告默认英文；AI 按用户聊天语言回复。已在真实宏观 / 政策 / 股票研报（如沙特 Vision 2030 深度报告）实战验证。触发：用户输入 /analyst-research、/flagship-research，或描述「做研报、投研报告、主题分析、深度分析、research report、topic analysis、investment research、policy assessment、industry deep-dive」类需求。不适用：单条新闻评论（用 topic-brief）、slide deck（用 deckster-slide-generator）、一次性快问快答。
 ---
 
 <!-- 双语 skill：本 SKILL.zh.md 是中文镜像，英文主文件为 SKILL.md。
@@ -20,15 +20,15 @@ description: 为投资分析师与政策研究者设计的端到端研究工作�
 本 skill 有三档 scope mode，按项目规模选一档：
 
   light    4-5 页决策备忘，0 图，约 15 分钟预算
-           单 LLM session。纯 markdown 脚注引用。
+           单 magpie 路由（免费优先）。纯 markdown 脚注引用。
            适用：exec brief、内部 memo、快速决策支持。
 
   medium   12-15 页主题分析，6-10 图，约 1 小时预算
-           单 LLM。PDF + Word 派生。draft 后一个 sign-off 检查点。
+           单 magpie 路由。PDF + Word 派生。draft 后一个 sign-off 检查点。
            适用：主题深挖、带数据的 board memo、当天分析。
 
   heavy    30-40 页 / 1.5 万字+ 旗舰报告，25-35+ 图，约 2-3 小时预算
-           单或多 LLM。PDF + Word + 公众号 md + HTML publication。
+           单或经 magpie 多模型。PDF + Word + 公众号 md + HTML publication。
            跑完完整 11 步分阶段工作流（框定 → 取数 → 分析 → 起草 →
            复盘），含 3 个 sign-off 检查点。
            适用：行业深度、宏观主题、政策评估、旗舰投资者刊物。
@@ -40,11 +40,22 @@ description: 为投资分析师与政策研究者设计的端到端研究工作�
 
 > 「听起来像 ~10 页带几张图 —— medium 模式，按这个跑？」
 
-mode 确认后，再问一句语言：**「报告语言 —— 英文（默认）还是其他语言？」**（见下方语言策略）。然后加载该 mode 的 references。
+mode 确认后，再问一句语言：**「报告语言 —— 英文（默认）还是其他语言？」**（见下方语言策略）。然后在**同一屏**跑成本闸口并选模板（默认 `light-green`，不阻塞）：
+
+```bash
+python3 ../../scripts/estimate.py --mode light|medium|heavy --sources <n> --template light-green
+```
+
+- `light` = 一级一句话卡（回一词确认）；`medium` / `heavy` = 二级完整卡（明确 yes）。
+- 付费强模型终审是三级，必须**单独**确认；默认走免费 magpie 路由。
+- 打包环境缺共享脚本时，按 `../../references/cost-gate.md` 复述同一张卡。
+- **未确认前不加载 references、不进入正文流程。**
+
+然后加载该 mode 的 references。
 
 ## 各 mode 加载顺序
 
-**始终先**读 `references/workflow.md`（约 40 行，mode 路由），它指向 mode 专属工作流文件。（每个 reference 都有 `.zh.md` 中文镜像；agent 读英文 `.md`。）
+**始终先**读 `references/workflow.md`（约 40 行，mode 路由）与共享成本契约 `../../references/cost-routing.md`、`../../references/cost-gate.md`；起草前必须先出预估卡。workflow.md 指向 mode 专属工作流文件。（每个 reference 都有 `.zh.md` 中文镜像；agent 读英文 `.md`。）
 
 ### light 模式
 
@@ -58,7 +69,7 @@ mode 确认后，再问一句语言：**「报告语言 —— 英文（默认�
 ### medium 模式
 
 1. **必读** `references/workflow.md` —— 总览 + mode 路由
-2. **必读** `references/workflow_medium.md` —— 8 步骨架、单 LLM、draft 后一个 sign-off 检查点
+2. **必读** `references/workflow_medium.md` —— 8 步骨架、单 magpie 路由、draft 后一个 sign-off 检查点
 3. **必读** `references/report_style_spec.md` —— 6-10 张图的视觉规范（chart_template 接口契约、调色板、字体策略）
 4. **必读** `references/_quarto-medium.yml` —— Quarto 模板（脚注引用、无 .bib、11pt 正文、Songti SC CJK）
 5. **按需** `scripts/chart_template.py` —— 绘图实现
@@ -68,7 +79,7 @@ mode 确认后，再问一句语言：**「报告语言 —— 英文（默认�
 ### heavy 模式
 
 1. **必读** `references/workflow.md` —— 总览 + mode 路由
-2. **必读** `references/workflow_heavy.md` —— 完整 11 步骨架、可选多 LLM、3 个 sign-off 硬停（outline / draft / final）
+2. **必读** `references/workflow_heavy.md` —— 完整 11 步骨架、可选经 magpie 多模型、3 个 sign-off 硬停（outline / draft / final）
 3. **必读** `references/report_style_spec.md` —— 含 HTML publication 派生的视觉规范
 4. **按需** `scripts/chart_template.py` —— 绘图实现
 5. **按需** `scripts/publication-style-template.html` —— HTML publication 模板
@@ -87,7 +98,7 @@ heavy 模式的 Quarto 模板来自 `report_style_spec.md §5.1`（无独立 `_q
 | 篇幅 | 4-5 页 | 12-15 页 | 30-40 页 / 1.5 万字+ |
 | 图表 | 0 | 6-10 | 25-35+ |
 | 时间预算 | 约 15 分钟 | 约 1 小时 | 约 2-3 小时 |
-| LLM | 单 | 单 | 单或多 LLM |
+| 模型路由 | 单 magpie 路由（免费优先） | 单 magpie 路由（免费优先） | 单或经 magpie 多模型 |
 | 工作流步数 | 6 | 8 | 11 |
 | 硬停 | 0 | 1（draft 后 sign-off） | 3（outline / draft / final） |
 | 派生形态 | PDF + Word | PDF + Word | PDF + Word + 公众号 md + HTML |
@@ -96,6 +107,13 @@ heavy 模式的 Quarto 模板来自 `report_style_spec.md §5.1`（无独立 `_q
 | 图模板 | n/a | 共用（chart_template.py） | 共用（chart_template.py） |
 
 各 mode 文件依赖、升降档路径、复盘段指针见 `MODE_REGISTRY.md`。
+
+## 成本闸口与输出模板（共享 plumbing）
+
+- **先预估。** 用仓根 `scripts/estimate.py`，按所选 mode 与来源数出卡：`light` 一级（回一词）、`medium`/`heavy` 二级（明确 yes）；付费强模型终审三级单独确认，默认 `ALLOW_PAID=0` 免费路由。
+- **执行中守卫。** 实际消耗超过预估上限 50%，或触及单次/月度上限 → 立即停，报已耗与剩余工作量；绝不自动升级付费。
+- **结束行。** 产物尾部追加 `<!-- cost: mode=... tokens=... channel=... cost=... estimate=... -->`（Markdown 用末行）。
+- **模板。** 与预估卡同屏选 `light-green`（默认）/ `classic-blue` / `warm-paper`。HTML / Quarto 派生用 `templates/<name>/tokens.css` + `templates/<name>/analyst.css`；PDF / Word 继承同一色板与字体气质。注册表见 `templates/README.md`。
 
 ## 何时不该用本 skill
 

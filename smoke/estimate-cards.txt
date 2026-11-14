@@ -1,0 +1,46 @@
+# Estimate card samples (free-first configured)
+
+$ python3 scripts/estimate.py --mode light --sources 25
+[L1] light · free (group/free-first) · tokens ≈ 30k–35k in · 7k–11k out · 15–25 min · ¥0 · template: light-green · proceed? (one word)
+
+GATE: awaiting confirmation — no work starts yet (exit 10).
+exit=10
+
+$ python3 scripts/estimate.py --mode medium --sources 15
+=== COST ESTIMATE / 预估卡 ===
+Mode / 模式:            medium · gate L2
+Template / 模板:        light-green (default light-green; classic-blue / warm-paper optional)
+Token range / token:    82k–94k in · 18k–28k out
+Duration / 预计时长:    50–80 min
+Channels / 通道:
+  Free / 免费:          group/free-first — ¥0
+  Paid / 付费:          off (ALLOW_PAID=0)
+Cloud upload / 云端:    none
+Estimated cost / 费用:  ¥0
+Budget / 预算:          per-run ¥20 · month ¥200 · month used ¥0.00
+MinerU / 云端 OCR:      not needed
+Confirm? (explicit yes / no)
+
+GATE: awaiting confirmation — no work starts yet (exit 10).
+exit=10
+
+$ python3 scripts/estimate.py --mode local-vault --files 12 --cloud-upload mineru --mineru-files 12
+=== COST ESTIMATE / 预估卡 ===
+Mode / 模式:            local-vault · gate L3
+Template / 模板:        light-green (default light-green; classic-blue / warm-paper optional)
+Token range / token:    60k–69k in · 14.4k–30k out
+Duration / 预计时长:    18–36 min
+Channels / 通道:
+  Free / 免费:          group/free-first — ¥0
+  Paid / 付费:          off (ALLOW_PAID=0)
+Cloud upload / 云端:    mineru
+Estimated cost / 费用:  未计量 / unmetered
+Budget / 预算:          per-run ¥20 · month ¥200 · month used ¥0.00
+MinerU / 云端 OCR:      12 file(s) · token configured (value never printed)
+---
+[L3 · separate confirmation] Cloud upload: MinerU · 12 file(s) · NOT approved by default.
+---
+Confirm? (explicit yes / no)
+
+GATE: awaiting confirmation — no work starts yet (exit 10).
+exit=10

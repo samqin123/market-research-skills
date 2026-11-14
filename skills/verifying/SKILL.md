@@ -37,23 +37,40 @@ Five scenarios are covered:
 
 The user supplies one statement (or paragraph) to verify. Optional attachments (PDFs, links, screenshots, notes) take priority as material to verify against.
 
-## Scope exclusions (refused topics)
+## Cost gate (level 1)
 
-Before any verification work begins, check whether the statement falls into a refused category. The following topics are out of scope regardless of how the request is phrased or how specific the question is:
+Before formal verification, show the compact level-1 card and wait for one word:
 
-- **Political issues** — elections, parties, political figures' positions, geopolitical disputes, government legitimacy debates, etc.
-- **Military issues** — military operations, force composition, equipment counts, conflict details, defense policy, etc.
-- **Religious issues** — doctrines, denominational disputes, religious leaders' statements, inter-faith comparisons, etc.
-- **Entertainment celebrity gossip** — personal lives, relationships, family affairs, paparazzi rumors, etc.
-- **Other inherently controversial topics** — even attempting verification can be inflammatory regardless of what the answer turns out to be.
+```bash
+python3 ../../scripts/estimate.py --mode verifying --sources <estimated source count>
+```
 
-When a request falls into any of these categories, reply with exactly one line and stop:
+It prints the mode, free-first channel, token range, duration, `¥0`, and the template line
+(`light-green` default). Verification is a free-channel single-shot task, so one word is enough.
+If the shared script is absent in a packaged skill, reproduce the one-liner from
+`../../references/cost-gate.md`. Paid channels are off (`ALLOW_PAID=0`); if a paid call is ever
+requested it becomes level 3 and needs its own confirmation. At the end, add the cost line to the
+verification note.
 
-> Out of scope. (超出能力范围)
+## Controversial topics (multi-source side-by-side)
 
-Do NOT attempt verification, partial verification, "let me try anyway," or step-by-step analysis. Do NOT explain why beyond this one line. Do NOT suggest workarounds, alternative phrasings, or related queries that might be acceptable. The line above is the entire response.
+Political, military, religious, geopolitical, identity and other contested topics are **in scope**.
+All subjects stay in scope; there is no one-line shutdown. Apply the same whitelist, download and
+give-up discipline as any other statement, plus these rules:
 
-This check happens **before** scenario routing — if it triggers, none of the rest of the skill runs.
+- Present **at least two authoritative sources side by side** (A / B), each with institution,
+  publication date, link and the specific passage or figure relied on.
+- **Attribute the standpoint**: say which institution / document / speaker each position comes
+  from. Do not anonymise a position into "some say".
+- **Do not force a single-party conclusion.** If the sources disagree, use the
+  `⚖ Multi-source conflict` output and explain the material difference (definition / time point /
+  revision / coverage / standpoint). If they agree, still cite both and say so.
+- Separate **fact / estimate / inference** explicitly; a contested claim is not promoted to
+  "verified" just because one side asserts it.
+- If only one side is reachable, say that plainly and mark the missing side; never invent the
+  other side to manufacture balance.
+- The usual red lines still apply: no fabrication, no non-whitelisted citation, no snippet-only
+  "verified", no silent definition swap.
 
 ## Scenario routing
 
@@ -246,7 +263,7 @@ Counter-examples (NOT acceptable as "verified"):
 
 ## One-level reasoning sub-flow
 
-Use this when the direct number cannot be traced to a primary source but the statement can be cross-checked via metric decomposition. **Only one level of decomposition** — the sub-metrics must each be verifiable against a primary or aggregator-database source. If a sub-metric still requires further decomposition (multi-level reasoning), tell the user this is out of scope for this skill and suggest splitting into steps or human follow-up.
+Use this when the direct number cannot be traced to a primary source but the statement can be cross-checked via metric decomposition. **Only one level of decomposition** — the sub-metrics must each be verifiable against a primary or aggregator-database source. If a sub-metric still requires further decomposition (multi-level reasoning), tell the user this is beyond this skill's one-level decomposition scope and suggest splitting into steps or human follow-up.
 
 Steps:
 
@@ -355,6 +372,6 @@ The four sub-flow outputs — `🔎 One-level reasoning`, `❌ Statement refuted
 - **Snippet ≠ verification**: for statements involving reports / charts / data, the original must be downloaded and read in full before claiming verified. Claiming "verified" based on SERP snippets, web fragments, or secondary paraphrases crosses the line.
 - **No conflating personal and institutional positions**: a scholar's personal working paper or personal view ≠ the official position of their institution.
 - **No skipping the download-blocked prompt**: when automated download fails, the `🔒 Needs user help to download` block must be output to hand the link to the user — do not silently skip or fabricate.
-- **No beyond-one-level reasoning**: this skill only supports one level of metric decomposition (Z = P × Q). If a sub-metric still requires further decomposition (multi-level reasoning), tell the user this is out of scope and suggest step-by-step verification or human follow-up.
-- **Surface divergence**: when any metadata dimension (time point / definition / unit / coverage / revision status / data type) differs from the user's stated claim, you MUST flag it on a `⚠` line. Silent omission of a divergence is equivalent to silent definition swap.
-- **No verifying refused topics**: politics / military / religion / entertainment celebrity gossip / other inherently controversial topics are out of scope. Reply with exactly "Out of scope. (超出能力范围)" and stop — no partial verification, no workaround suggestions, no explanation beyond that one line.
+- **No beyond-one-level reasoning**: this skill only supports one level of metric decomposition (Z = P × Q). If a sub-metric still requires further decomposition (multi-level reasoning), say that it is beyond this skill's one-level scope and suggest step-by-step verification or human follow-up.
+- **No silent omission of divergence**: when any metadata dimension (time point / definition / unit / coverage / revision status / data type) differs from the user's stated claim, you MUST flag it on a `⚠` line. Silent omission of a divergence is equivalent to silent definition swap.
+- **Contested topics stay in scope**: political / military / religious / geopolitical / identity / other contested statements are verified under the whitelist and presented with multiple authoritative sources side by side, each attributed to its standpoint — never a single-party conclusion, never a one-line shutdown.

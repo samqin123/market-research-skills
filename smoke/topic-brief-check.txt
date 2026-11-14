@@ -1,0 +1,9 @@
+# Acceptance 3 — topic-brief light-green render, blank author
+
+$ .venv/bin/python skills/topic-brief/scripts/render.py smoke/topic-brief-seed.json --out smoke --template light-green --cost-line ...
+OK: smoke/topic-brief-light-green.html (template=light-green)
+
+template marker: template: light-green | main gene: Chinese-painting negative space; auxiliary: Ghibli natural green --
+author occurrences: 0
+cost line: cost: mode=topic-brief tokens=8k_in/6k_out channel=group/free-first cost=¥0 estimate=12k-19k/4.5k-7.5k --
+html bytes: 14093

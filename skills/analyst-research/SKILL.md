@@ -5,8 +5,8 @@ description: >-
   researchers. Three scope modes the user picks at trigger time — light (4-5
   page decision memo, ~15 min, 0 charts), medium (12-15 page topic brief, ~1
   h, 6-10 charts), heavy (flagship report 30-40 pages / 15k+ words, ~2-3 h,
-  25-35+ charts, multi-stage workflow, multi-LLM, PDF + Word + WeChat + HTML
-  derivations). Reports default to English; the AI replies in the user's chat
+  25-35+ charts, multi-stage workflow, multi-model via the local magpie
+  gateway, PDF + Word + WeChat + HTML derivations). Reports default to English; the AI replies in the user's chat
   language. Battle-tested on real macro/policy/equity reports (e.g. Saudi
   Vision 2030 deep-dive). Triggers when user types /analyst-research,
   /flagship-research, or describes needs like "research report", "topic
@@ -33,15 +33,15 @@ When this skill is triggered, **before** loading any reference file, ask the use
 This skill has three scope modes. Pick one based on your project size:
 
   light    4-5 page decision memo, 0 charts, ~15 min budget
-           Single LLM session. Pure markdown footnote citations.
+           Single magpie route (free-first). Pure markdown footnote citations.
            Use for: exec brief, internal memo, quick decision support.
 
   medium   12-15 page topic analysis, 6-10 charts, ~1 h budget
-           Single LLM. PDF + Word derivations. Sign-off checkpoint after draft.
+           Single magpie route. PDF + Word derivations. Sign-off checkpoint after draft.
            Use for: topic deep-dive, board memo with data, same-day analysis.
 
   heavy    Flagship report 30-40 pages / 15k+ words, 25-35+ charts, ~2-3 h budget
-           Single or multi-LLM. PDF + Word + WeChat md + HTML publication.
+           Single or multi-model via magpie. PDF + Word + WeChat md + HTML publication.
            Runs the full 11-step staged workflow (framing → sourcing →
            analysis → drafting → review), with 3 sign-off checkpoints.
            Use for: industry deep-dive, macro thesis, policy assessment,
@@ -54,11 +54,22 @@ If the user's trigger message already contains explicit scope hints (page count,
 
 > "Sounds like ~10 pages with a few charts — medium mode. Going with that?"
 
-After the mode is confirmed, ask one short language question: **"Report language — English (default), or another language?"** (see Language policy below). Then load the reference files for that mode.
+After the mode is confirmed, ask one short language question: **"Report language — English (default), or another language?"** (see Language policy below). Then run the **cost gate** and pick a template **on the same screen** (default `light-green`, no blocking):
+
+```bash
+python3 ../../scripts/estimate.py --mode light|medium|heavy --sources <n> --template light-green
+```
+
+- `light` = level 1 compact card (one-word confirmation); `medium` / `heavy` = level 2 full card (explicit yes).
+- A paid strong-model review is level 3 and needs its **own** confirmation; default stays on the free magpie route.
+- If the shared script is absent in a packaged skill, reproduce the card from `../../references/cost-gate.md`.
+- Do **not** load references or start the workflow before confirmation. A missing confirmation means no drafting.
+
+Then load the reference files for that mode.
 
 ## Loading order per mode
 
-First **always** read `references/workflow.md` (≈40 lines, mode router). It points you to the mode-specific workflow file. (Each reference also has a `.zh.md` Chinese mirror; the agent reads the English `.md`.)
+First **always** read `references/workflow.md` (≈40 lines, mode router) plus the shared cost/routing contract `../../references/cost-routing.md` and `../../references/cost-gate.md`; the card must be shown before any drafting. It points you to the mode-specific workflow file. (Each reference also has a `.zh.md` Chinese mirror; the agent reads the English `.md`.)
 
 ### light mode
 
@@ -72,7 +83,7 @@ Then proceed to `workflow_light.md §1 hypothesis lock` to start the 6-step flow
 ### medium mode
 
 1. **Required** `references/workflow.md` — overview + mode router
-2. **Required** `references/workflow_medium.md` — 8-step skeleton, single LLM, one sign-off checkpoint after draft
+2. **Required** `references/workflow_medium.md` — 8-step skeleton, single magpie route, one sign-off checkpoint after draft
 3. **Required** `references/report_style_spec.md` — visual spec for the 6-10 charts (chart_template interface contract, color palette, font policy)
 4. **Required** `references/_quarto-medium.yml` — Quarto template (footnote citations, no .bib, 11pt body, Songti SC CJK)
 5. **On demand** `scripts/chart_template.py` — chart styling implementation
@@ -82,7 +93,7 @@ Then proceed to `workflow_medium.md §1 onboarding` to scaffold the project and 
 ### heavy mode
 
 1. **Required** `references/workflow.md` — overview + mode router
-2. **Required** `references/workflow_heavy.md` — full 11-step skeleton, multi-LLM optional, 3 sign-off checkpoints (outline / draft / final)
+2. **Required** `references/workflow_heavy.md` — full 11-step skeleton, multi-model via magpie optional, 3 sign-off checkpoints (outline / draft / final)
 3. **Required** `references/report_style_spec.md` — visual spec including HTML publication derivation
 4. **On demand** `scripts/chart_template.py` — chart styling implementation
 5. **On demand** `scripts/publication-style-template.html` — HTML publication template
@@ -101,7 +112,7 @@ Quick summary below; **authoritative source of truth is `MODE_REGISTRY.md`**. Ed
 | Output length | 4-5 pages | 12-15 pages | 30-40 pages / 15k+ words |
 | Charts | 0 | 6-10 | 25-35+ |
 | Runtime budget | ~15 min | ~1 h | ~2-3 h |
-| LLM model | single | single | single or multi-LLM |
+| Model route | single magpie route (free-first) | single magpie route (free-first) | single or multi-model via magpie |
 | Workflow steps | 6 | 8 | 11 |
 | Hard stops | 0 | 1 (sign-off after draft) | 3 (outline / draft / final) |
 | Derived outputs | PDF + Word | PDF + Word | PDF + Word + WeChat md + HTML |
@@ -110,6 +121,22 @@ Quick summary below; **authoritative source of truth is `MODE_REGISTRY.md`**. Ed
 | Chart template | n/a | shared (chart_template.py) | shared (chart_template.py) |
 
 For per-mode file dependencies, mode-upgrade trajectory, and retrospective section pointers, see `MODE_REGISTRY.md`.
+
+## Cost gate and output template (shared plumbing)
+
+- **Estimate first.** Run `scripts/estimate.py` (repo root) with the chosen mode and source count.
+  `light` = level 1 (one-word confirmation); `medium` / `heavy` = level 2 (explicit yes).
+  A paid strong-model review is level 3 and needs a separate yes; default is the free
+  `group/free-first` route (`ALLOW_PAID=0`).
+- **Guard during work.** If actual consumption exceeds the estimate high end by 50%, or the
+  per-run / monthly cap is reached, stop and report consumed work + remaining work. Never
+  auto-escalate to paid.
+- **End line.** Append `<!-- cost: mode=... tokens=... channel=... cost=... estimate=... -->`
+  (or a final Markdown line) to the deliverable.
+- **Template.** Choose `light-green` (default) / `classic-blue` / `warm-paper` on the same screen
+  as the card. For HTML / Quarto derivations use `templates/<name>/tokens.css` +
+  `templates/<name>/analyst.css`; PDF / Word inherit the same palette and font temperament.
+  Full registry: `templates/README.md`.
 
 ## When NOT to use this skill
 

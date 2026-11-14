@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<!-- template: warm-paper | main gene: Neoclassicism; auxiliary: Chinese-painting paper/negative space -->
+<meta charset="UTF-8">
+<title>{{ briefing.brand_name }} | {{ briefing.subject_name }} | {{ briefing.issue_title }}（{{ briefing.period_label }}）</title>
+</head>
+<body style="margin:0; padding:0; background:#e9dcc6; font-family:'Noto Serif SC','Songti SC','Times New Roman',serif; color:#3a332c; line-height:2.05; font-size:15px;">
+
+<!-- ============ 整体容器 ============ -->
+<table align="center" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:720px; margin:0 auto; background:#faf3e6; border:0;">
+<tr><td style="padding:0 22px 36px; border:0;">
+
+<!-- ============ 封面 ============ -->
+<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#3b2f27; margin-bottom:26px; border:0;">
+  <tr>
+    <td style="background-color:#b08a5a; height:3px; font-size:0; line-height:0; border:0;">&nbsp;</td>
+  </tr>
+  <tr>
+    <td style="background-color:#3b2f27; padding:38px 32px; border:0;">
+      <p style="margin:0 0 14px; font-size:12px; letter-spacing:4px; color:#e6d8c4; font-weight:500;">
+        {{ briefing.brand_name }}<span style="color:#c9a97f; font-weight:700; margin-left:16px;">{{ briefing.subject_name }}</span>
+      </p>
+      <p style="margin:0 0 24px; font-size:23px; font-weight:700; line-height:1.55; color:#f8f0df;">
+        {{ briefing.issue_title }}
+      </p>
+      <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border:0; border-collapse:collapse; border-spacing:0;">
+        <tr>
+          {% if briefing.author %}<td align="left" style="font-size:13px; color:#e6d8c4; letter-spacing:1px; border:0; padding:0; text-align:left;">{{ briefing.author }}</td>{% endif %}
+          <td align="right" style="font-size:14px; color:#f8f0df; font-weight:600; border:0; padding:0; text-align:right;">{{ briefing.period_label }}</td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+
+<!-- ============ 本期摘要 ============ -->
+<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#f3e8d7; margin-bottom:36px; border:0;">
+  <tr>
+    <td style="background-color:#f3e8d7; padding:24px 26px; border:0;">
+      <p style="margin:0 0 14px; color:#3b2f27; font-size:16px; font-weight:700; text-align:center; letter-spacing:3px;">本期要点</p>
+      <p style="margin:0 0 6px; color:#3b2f27; font-size:14px; font-weight:600;">焦点</p>
+      <p style="margin:0 0 14px; color:#3a332c;">{{ briefing.summary.focus_blurb }}</p>
+      <p style="margin:0 0 6px; color:#3b2f27; font-size:14px; font-weight:600;">本期动态</p>
+      {% for item in briefing.summary.items %}
+      <p style="margin:6px 0; color:#3a332c; line-height:1.95;">
+        <span style="color:#8c4a32; font-size:11px; margin-right:6px;">▶</span><span style="color:#3b2f27; font-weight:600; margin-right:6px;">{{ item.label }}</span>{{ item.text }}
+      </p>
+      {% endfor %}
+    </td>
+  </tr>
+</table>
+
+<!-- ============ 焦点观察 大标题 + 上下横线 ============ -->
+<table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:44px 0 30px; border:0;">
+  <tr><td style="background-color:#d8cbb4; height:1px; font-size:0; line-height:0; border:0;">&nbsp;</td></tr>
+  <tr><td align="center" style="padding:14px 0; text-align:center; color:#3b2f27; font-size:18px; font-weight:700; letter-spacing:5px; border:0;">焦点观察</td></tr>
+  <tr><td style="background-color:#d8cbb4; height:1px; font-size:0; line-height:0; border:0;">&nbsp;</td></tr>
+</table>
+
+<!-- ============ 焦点标题 + 副标题 ============ -->
+<p style="margin:0 0 8px; color:#3b2f27; font-size:19px; font-weight:700; text-align:center; line-height:1.55;">{{ briefing.focus.title }}</p>
+{% if briefing.focus.subtitle %}
+<p style="margin:18px 0 12px; color:#3b2f27; font-size:15px; font-weight:600; text-align:center;">{{ briefing.focus.subtitle }}</p>
+{% endif %}
+
+<!-- ============ 焦点正文 ============ -->
+{% for sec in briefing.focus.sections %}
+  {% if sec.heading and (not loop.first or not briefing.focus.subtitle) %}
+  <p style="margin:22px 0 10px; color:#3b2f27; font-size:15px; font-weight:600; text-align:center;">{{ sec.heading }}</p>
+  {% endif %}
+  {% for p in sec.paragraphs %}
+  <p style="margin:0 0 14px; text-indent:2em; text-align:justify; color:#3a332c;">{{ p }}</p>
+  {% endfor %}
+{% endfor %}
+
+<!-- ============ 区域动态 大标题 + 上下横线 ============ -->
+<table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:44px 0 30px; border:0;">
+  <tr><td style="background-color:#d8cbb4; height:1px; font-size:0; line-height:0; border:0;">&nbsp;</td></tr>
+  <tr><td align="center" style="padding:14px 0; text-align:center; color:#3b2f27; font-size:18px; font-weight:700; letter-spacing:5px; border:0;">区域动态</td></tr>
+  <tr><td style="background-color:#d8cbb4; height:1px; font-size:0; line-height:0; border:0;">&nbsp;</td></tr>
+</table>
+
+<!-- ============ 4 个子板块 ============ -->
+{% for section in briefing.sections %}
+<table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top:32px; border:0;">
+  <tr>
+    <td style="border:0;">
+      <p style="margin:0 0 6px; color:#b08a5a; font-size:30px; font-weight:700; line-height:1;">{{ "%02d"|format(loop.index) }}</p>
+      <p style="margin:0 0 16px; color:#3b2f27; font-size:17px; font-weight:700;">{{ section.label | replace(' · ', '&nbsp;·&nbsp;') | safe }}</p>
+      {% for it in section.items %}
+      <div style="margin:20px 0 24px;">
+        <p style="margin:0;"><span style="color:#8c4a32; font-weight:700; margin-right:4px;">▶</span><span style="color:#3a332c; font-weight:700;">{{ it.headline }}</span></p>
+        <p style="margin:6px 0 0; text-align:justify; text-indent:2em; color:#3a332c;">{{ it.body }}</p>
+        <p style="margin:4px 0 0; color:#8a7d6d; font-size:13px; text-align:right;">□ {{ it.source.label }}[{{ footnote_index(it.source.url) }}]</p>
+      </div>
+      {% endfor %}
+    </td>
+  </tr>
+</table>
+{% endfor %}
+
+<!-- ============ 脚注 ============ -->
+<table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top:36px; border-top:1px solid #e4d8c5; border-left:0; border-right:0; border-bottom:0;">
+  <tr>
+    <td style="padding-top:14px; border:0;">
+      <p style="margin:0 0 8px; color:#3b2f27; font-size:14px; font-weight:600;">参考来源</p>
+      <ol style="padding-left:24px; margin:0; font-size:12px; color:#8a7d6d; word-break:break-all;">
+      {% for src in all_sources %}
+        <li style="margin-bottom:4px;"><a href="{{ src.url }}" style="color:#8c4a32; text-decoration:none;">{{ src.url }}</a></li>
+      {% endfor %}
+      </ol>
+    </td>
+  </tr>
+</table>
+
+<!-- ============ 免责声明 ============ -->
+<table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#f3e8d7; margin-top:30px; border:0;">
+  <tr>
+    <td style="background-color:#f3e8d7; padding:16px 18px; border-left:2px solid #b08a5a; border:0;">
+      <p style="margin:0 0 6px; color:#3b2f27; font-weight:600; font-size:13px;">免责声明</p>
+      <p style="margin:0; color:#8a7d6d; font-size:12px; line-height:1.7;">{{ briefing.disclaimer }}</p>
+    </td>
+  </tr>
+</table>
+
+<!-- ============ END ============ -->
+<p style="margin:22px 0 0; text-align:center; color:#3b2f27; font-size:13px; letter-spacing:6px; font-weight:600;">— END —</p>
+
+</td></tr>
+</table>
+
+</body>
+</html>

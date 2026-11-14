@@ -50,8 +50,12 @@ There are **two distinct jobs** — figure out which the user wants:
    options (tiny ~75 MB / small ~480 MB / turbo ~1.6 GB / large-v3 ~3 GB) and lets the
    user pick or skip; the choice is saved to `.env` (`KB_WHISPER_MODEL`) so it never
    re-asks. Fully local — no token/quota; the model downloads once, then offline.
-4. **`claude` CLI on PATH** — the pipeline shells out to `claude -p` for frontmatter
-   enrichment and PPT-image OCR. If absent, those steps are skipped (not fatal).
+4. **magpie gateway** — all script-side LLM calls (frontmatter enrichment and PPT-image OCR)
+   go through the local **magpie** OpenAI-compatible gateway. Configure `MAGPIE_BASE_URL`,
+   `MAGPIE_API_KEY` (optional), `MAGPIE_MODEL_FAST` / `MAGPIE_MODEL_VISION` in
+   `scripts/.env` (see `.env.example`). Free-first is the default; no provider key is
+   hard-coded or printed. If the gateway is absent/unreachable, those steps are skipped
+   (not fatal) and the conversion still lands. Cost policy: `../../references/cost-routing.md`.
 5. **Configure paths** — two ways:
    - **Guided (recommended for the user):** just run `python3 scripts/sync.py` in a
      terminal. On first run (when paths aren't configured yet) it launches an
@@ -60,11 +64,20 @@ There are **two distinct jobs** — figure out which the user wants:
      to use the tool. Then they re-run to convert.
    - **Manual:** copy `scripts/.env.example` → `scripts/.env` and set
      `KB_SOURCE_DIR` (raw files) and `KB_TARGET_DIR` (the Markdown vault), both
-     absolute. `MINERU_TOKEN` is optional (only for legacy .doc/.ppt, .html, scanned
-     PDFs, images — get one at https://mineru.net).
-   - When **you (Claude)** run the setup for the user, prefer the manual path: ask
+     absolute. Configure the `MAGPIE_*` keys for enrichment/OCR.
+   - **MinerU token is optional and cloud-only.** It is used **only** for scanned PDFs,
+     legacy `.doc`/`.ppt`, and images. **Apply for an official API token at
+     https://mineru.net (console), then paste it into `MINERU_TOKEN`.** All local features
+     work without it; those file types are skipped and listed explicitly at the end.
+     Official current keys may start with `sk-` (not a JWT) — paste as-is; do not convert.
+     The first-run wizard prints this reminder in both Chinese and English.
+   - When **you (the AI)** run the setup for the user, prefer the manual path: ask
      them for the two folders, then write `scripts/.env` directly (the wizard only
-     fires on an interactive TTY, which a `claude -p` subprocess is not).
+     fires on an interactive TTY, which a script subprocess is not). Never echo the token.
+   - **Cost gate:** before a batch sync, show the card from `../../references/cost-gate.md`.
+     A batch is level 2 (explicit yes). MinerU is a cloud upload = level 3 (separate
+     confirmation; non-interactive requires `MINERU_CONFIRM=1`). A missing MinerU token is
+     called out on the card — never silently skipped.
 
 ### Run it
 
@@ -114,13 +127,14 @@ First terminal run with no config → the setup wizard (above). Once `.env` exis
 
 ### PPT smart OCR
 
-Images embedded in slides are OCR'd via `claude -p` (its Read tool reads the
-image), but to avoid spawning one slow `claude` per decorative logo:
+Images embedded in slides are OCR'd via the **magpie** vision channel, but to avoid
+one slow request per decorative logo:
 de-duplicates identical images (OCR once), skips images below
 `OCR_MIN_IMAGE_BYTES`, and runs unique content images concurrently
 (`OCR_MAX_WORKERS`). Native PowerPoint **chart objects** are read directly
 (categories + series values → a table). Set `OCR_PPTX_IMAGES = False` to turn OCR
-off entirely (images are still extracted + referenced).
+off entirely (images are still extracted + referenced). Failures are logged and
+degrade to the image reference — never a hard stop.
 
 ### Frontmatter written to every `.md`
 
@@ -129,7 +143,7 @@ off entirely (images are still extracted + referenced).
 source: "[[…/<file>.<ext>]]"   # backlink to the raw file
 source_type: pdf | xlsx | docx | pptx | md | …
 converted_by: pymupdf4llm | pandoc | python-pptx | excel-openpyxl | csv | passthrough | whisper | "MinerU vlm" | …
-# enrich (best-effort via claude -p, may be missing on failure):
+# enrich (best-effort via magpie free-first, may be missing on failure):
 abstract: |
   3-sentence summary.
 auto_tags: [..]
@@ -208,7 +222,10 @@ pattern, not one offhand question; keep proposals to a single `> 💡 …` block
 ## Notes
 
 - The pipeline does **not** depend on a running Claude session — it's a CLI; it
-  only shells out to `claude -p` for the optional enrich/OCR steps.
+  only calls the local magpie gateway for the optional enrich/OCR steps.
+- All model calls route through magpie (free-first); keys and model names live in
+  `scripts/.env`. Paid escalation is off by default (`ALLOW_PAID=0`) and would need a
+  level-3 confirmation. MinerU cloud OCR is a separate level-3 confirmation.
 - It never rewrites document **bodies** — all automation is frontmatter-only, so
   there's zero content-loss risk from the tool itself.
 - Canonical, test-covered source lives in the author's dev project; the

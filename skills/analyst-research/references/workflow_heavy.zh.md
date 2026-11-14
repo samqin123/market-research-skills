@@ -23,6 +23,10 @@
 
 ### 1.3 新项目 onboarding 流程
 
+### 步骤 0a —— 成本闸口 + 模板（搭脚手架前必做）
+
+跑 `python3 ../../../scripts/estimate.py --mode heavy --sources <n>`，出**二级**完整卡（模式、token 区间、时长、免费/付费通道、云端上传、预计费用、预算、模板）。`heavy` 须明确 yes。若要求 magpie 多模型，另加**三级**单独确认；否则走免费单路由。付费 heavy 终审是三级、默认关闭。模板默认 `light-green`，同屏选。未确认前不搭脚手架、不写正文。执行中实际消耗超过预估 150% 或触及预算上限 → 立即停。
+
 **场景**：用户希望在一个主对话中完成项目脚手架搭建并启动十一步流程。skill 整体（`SKILL.md` + `references/workflow.md` + `references/report_style_spec.md` + `scripts/chart_template.py` + `scripts/publication-style-template.html` + `scripts/author.jpg`）通过以下两种方式之一到位：A. `analyst-research` skill 被触发后由 AI 整体拷贝到项目根；B. 用户手动把 `analyst-research/` 文件夹整体拷到新项目根目录。AI 助手在新项目对话中**第一次读到本文档时**，依次读完 references/ 下两份文档，然后按以下流程进入。
 
 **第 0 步：三件套到位检查**
@@ -60,14 +64,14 @@ analyst-research/
 同时问三个 onboarding 问题，回答后全程锁定不再追问：
 
 0. **报告语言？** 英文（default）/ 中文 / 其他。不指定即按英文写主报告与派生稿（见 SKILL.md「Reply language」）。英文稿跳过中文冒号红线、强制执行 unescaped `$` 红线（金额写 `\$`，否则 LaTeX 当数学定界符渲染失败）。锁定记入 CLAUDE.md。
-1. **是否采用多 LLM 协作模式？**
-   - **不采用（default）**：全程 Claude solo。Step 2 广搜与补搜 Claude 一家做，Step 9b critique 由 Claude 按 6 类视角 self-critique（事实、口径、引用、跨节一致、论证流、语言规范），独立性弱于多 LLM 模式
-   - **采用**：Step 2 调三家平行（Claude + GPT + DS），Step 9b critique 调 GPT（不调 DS）。其他步骤仍 Claude solo
-   - 多 LLM 模式需要用户手动切到对应 plugin 或网页运行 GPT / DS，节奏代价显著；单 LLM 模式无切换成本但失去 critique 独立性。default 选不采用，确认要采用时显式说明
+1. **是否采用 magpie 多模型协作模式？**
+   - **不采用（default）**：全程一条免费优先路由。Step 2 广搜与补搜都用这条路由；Step 9b 用 magpie 路由自评（6 类视角：事实、口径、引用、跨节一致、论证流、语言规范），独立性弱于独立第二家族。
+   - **采用**：Step 2 由 2-3 个模型家族**在 magpie 后**平行执行；Step 9b critique 换一个不同家族。其他步骤仍走主路由。会消耗更多 token；若涉及付费或外部多模型调用，可能需要三级确认。
+   - 所有调用仍走同一个 magpie 网关，不需要手动切厂商。default 选不采用；确认采用时显式说明。
 2. **是否有验证过的 Quarto `_quarto.yml` 模板可以复用？**
-   - 实战经验：用户已有的经验证 yml 比 Claude 从零拼出的「最佳实践」更靠谱，复用能省去字体、linestretch、目录中文化的多轮反复调试
+   - 实战经验：用户已有的经验证 yml 比 magpie 路由 AI 从零拼出的「最佳实践」更靠谱，复用能省去字体、linestretch、目录中文化的多轮反复调试
 
-三项答案锁定后写入项目级 CLAUDE.md（语言记「报告语言」段、多 LLM 记「多 LLM 协作」段），进第 2 步搭脚手架。
+三项答案锁定后写入项目级 CLAUDE.md（语言记「报告语言」段、magpie 多模型记「magpie 多模型 协作」段），进第 2 步搭脚手架。
 
 工具栈其余默认值不再每次询问。如用户对默认有调整（如改用 Word），由用户主动说明：
 
@@ -154,7 +158,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "analyst-researc
 - 重要文献结构性引用前必须下载全文（§步骤 5）
 - 数据 + 脚本必须双双落盘（§5.5）
 - 写作规范、PDF 兼容、CSV 卫生贯穿所有步骤
-- 多 LLM 平行产出时各家只在 `_process/<llm>/` 下产出，由 Claude 综合
+- magpie 多模型 平行产出时各家只在 `_process/<llm>/` 下产出，由 magpie 路由 AI 综合
 
 **遇到分歧的处理**：
 - 用户说「跳过某步」：先问「为什么」，硬停不能跳，软停可裁剪深度
@@ -207,16 +211,16 @@ AI 绝对不做：
 | 步骤 | 名称 | 主导 | 停点 |
 |---|---|---|:-:|
 | 1 | 初步话题 | 用户提出 | 软 |
-| 2 | 广搜 | Claude solo（单 LLM 模式 default）；三家平行（多 LLM 模式） | 软 |
-| 3 | AI 基于资料建议话题方向 | Claude | 软 |
+| 2 | 广搜 | magpie 免费优先单路由（单 magpie 路由模式 default）；三家平行（magpie 多模型模式） | 软 |
+| 3 | AI 基于资料建议话题方向 | magpie 路由 AI | 软 |
 | 4 | 确认话题与研究思路 | 用户 | **硬 #1** |
-| 5 | 补搜（聚焦深做，重要资料全文下载） | Claude solo（多 LLM 模式可调三家平行） | 软 |
-| 6 | 详细 outline draft（含图表清单） | Claude solo（多 LLM 模式可调三家 brainstorm） | **硬 #2** |
-| 7 | 完成图与表，回填 outline | Claude 主笔 | 软（落盘后告知，用户随时审 JPG） |
-| 8 | draft 写作（default 一气连写整稿） | Claude solo（含渲染与 YAML 调优） | 软（节内硬停作为 fallback） |
-| 9 | 精修：9b critique → 9c verifying → 9d 用户 sign off | 单 LLM 模式 Claude self-critique；多 LLM 模式 GPT critique | 软（9d **硬 #3**）|
-| 10 | 定稿 + 派生：10a 主报告冻结、10b Word、10c publication HTML（可选）、10d 公众号 JPG 切页（可选） | Claude | 软（每子步落盘后告知） |
-| 11 | 复盘 | Claude + 用户 | 随时（11.2 项目收尾一次性 audit）|
+| 5 | 补搜（聚焦深做，重要资料全文下载） | magpie 免费优先单路由（magpie 多模型模式可调三家平行） | 软 |
+| 6 | 详细 outline draft（含图表清单） | magpie 免费优先单路由（magpie 多模型模式可调三家 brainstorm） | **硬 #2** |
+| 7 | 完成图与表，回填 outline | magpie 路由 AI 主笔 | 软（落盘后告知，用户随时审 JPG） |
+| 8 | draft 写作（default 一气连写整稿） | magpie 免费优先单路由（含渲染与 YAML 调优） | 软（节内硬停作为 fallback） |
+| 9 | 精修：9b critique → 9c verifying → 9d 用户 sign off | 单 magpie 路由模式 magpie 路由自评；magpie 多模型模式 第二模型 critique | 软（9d **硬 #3**）|
+| 10 | 定稿 + 派生：10a 主报告冻结、10b Word、10c publication HTML（可选）、10d 公众号 JPG 切页（可选） | magpie 路由 AI | 软（每子步落盘后告知） |
+| 11 | 复盘 | magpie 路由 AI + 用户 | 随时（11.2 项目收尾一次性 audit）|
 
 **硬停 vs 软停**：
 - **硬停**：必须停下来等用户审阅签字，AI 不能自行进入下一步
@@ -248,10 +252,10 @@ AI 绝对不做：
 
 **目标**：定话题方向（数量优先，覆盖面优先）
 
-**操作**（按 onboarding 锁定的 LLM 模式执行）：
+**操作**（按 onboarding 锁定的 模型 模式执行）：
 
-- **单 LLM 模式（default）**：Claude solo 走遍七类来源，配合 iFinD MCP 或 `financial-data-sources` skill 抓数据。**单 LLM 模式的盲点兜底机制是用户手动补关键 PDF**（实战经验：曾有项目在 step 5 之后用户补 11 份核心 PDF，引出 8 项 step 2 没搜到的关键发现）。Claude 综合到 `2_research/research.md`
-- **多 LLM 模式**：Claude / GPT / DeepSeek 三家独立搜索一遍，三家的搜索引擎接口、训练数据覆盖、检索风格差异大，平行能避免单家盲点（实战案例：某区域统计局数据被一家 LLM 漏掉，用户追问后才被另一家补上）。Claude 综合三家结果，去重归类落 `research.md`
+- **单 magpie 路由模式（default）**：magpie 免费优先单路由 走遍七类来源，配合 iFinD MCP 或 `financial-data-sources` skill 抓数据。**单 magpie 路由模式的盲点兜底机制是用户手动补关键 PDF**（实战经验：曾有项目在 step 5 之后用户补 11 份核心 PDF，引出 8 项 step 2 没搜到的关键发现）。magpie 路由 AI 综合到 `2_research/research.md`
+- **magpie 多模型模式**：magpie 路由 AI / 第二模型 / 第二个免费模型 三家独立搜索一遍，三家的搜索引擎接口、训练数据覆盖、检索风格差异大，平行能避免单家盲点（实战案例：某区域统计局数据被一家 模型 漏掉，用户追问后才被另一家补上）。magpie 路由 AI 综合三家结果，去重归类落 `research.md`
 
 两种模式共用以下动作：
 
@@ -272,11 +276,11 @@ AI 绝对不做：
 | A.6 公众号 / 行业社群 | 财经 / 区域 / 垂直行业的中文公众号 |
 | A.7 数据库（程序化） | 项目可用的 MCP / API / skill：iFind、OpenBB、`financial-data-sources` skill 等 |
 
-**中英文并重原则**：国际机构、投行、学术英文为主，区域、政策、一手新闻中文常更准。多 LLM 模式下三家分工：Claude 偏英文学术与投行报告，DeepSeek 偏中文与区域语境，GPT 平衡（详见 §6.2）。单 LLM 模式下 Claude 一家走遍七类，中文区域类用 iFinD MCP 与公众号 WebFetch 补足。
+**中英文并重原则**：国际机构、投行、学术英文为主，区域、政策、一手新闻中文常更准。magpie 多模型模式下三家分工：magpie 路由 AI 偏英文学术与投行报告，第二个免费模型 偏中文与区域语境，第二模型 平衡（详见 §6.2）。单 magpie 路由模式下 magpie 路由 AI 一家走遍七类，中文区域类用 iFinD MCP 与公众号 WebFetch 补足。
 
 **来源覆盖自检**：步骤 2 完成时 AI 必须自查七类是否各检索过。任何一类完全没搜过，须补做后再进步骤 3。
 
-**交付物**：`2_research/research.md` 起稿（分七节对应 A.1-A.7），原始多 LLM 产出留 `2_research/_process/`
+**交付物**：`2_research/research.md` 起稿（分七节对应 A.1-A.7），原始magpie 多模型 产出留 `2_research/_process/`
 
 **关键纪律：「打开网页下载，再判断」**
 
@@ -284,8 +288,8 @@ AI 绝对不做：
 
 **踩坑警示**：
 
-- （仅多 LLM 模式）三家平行搜出现矛盾时，不要让 Claude 仲裁，让用户看到原始矛盾
-- （仅单 LLM 模式）单家给的关键判断必须对照另一类来源（如 IMF 估算对照官方主权方披露）才能成结论，单一来源孤证不立
+- （仅magpie 多模型模式）三家平行搜出现矛盾时，不要让 magpie 路由 AI 仲裁，让用户看到原始矛盾
+- （仅单 magpie 路由模式）单家给的关键判断必须对照另一类来源（如 IMF 估算对照官方主权方披露）才能成结论，单一来源孤证不立
 - 「找不到」要谨慎下结论，可能是检索词不对，再换一两组关键词
 
 ---
@@ -335,8 +339,8 @@ AI 绝对不做：
 
 **操作**：
 - 基于 topic.md 的章节骨架，逐节列出还需要的支撑资料
-- **单 LLM 模式（default）**：Claude solo 聚焦子问题深搜，用户补关键文献全文
-- **多 LLM 模式**：三家平行聚焦子问题深搜，Claude 综合
+- **单 magpie 路由模式（default）**：magpie 免费优先单路由 聚焦子问题深搜，用户补关键文献全文
+- **magpie 多模型模式**：三家平行聚焦子问题深搜，magpie 路由 AI 综合
 - 关键文献全文下载（两模式共用，见下方纪律）
 
 **关键纪律：重要资料全文下载**
@@ -387,12 +391,12 @@ AI 绝对不做：
   - 关键引用（具体到文献名 + 页码）
 - **强制段落**：「不做什么」+「不确定性边界」（数据缺口、口径限制、商业信息风险等）
 
-**图表清单生成（按 LLM 模式分）**：
+**图表清单生成（按 模型 模式分）**：
 
-- **单 LLM 模式（default）**：Claude 一家基于完整资料库给图表清单（每节建议哪些图表能支撑论点），用户裁定后落 outline
-- **多 LLM 模式**：Claude / GPT / DeepSeek 三家各自给图表方案，Claude 综合一份统一清单。三家分工倾向：数据精度与口径辨析图 GPT 强，历史时序与区域语境图 DS 强，论证流锚定与跨节衔接图 Claude 强
+- **单 magpie 路由模式（default）**：magpie 路由 AI 一家基于完整资料库给图表清单（每节建议哪些图表能支撑论点），用户裁定后落 outline
+- **magpie 多模型模式**：magpie 路由 AI / 第二模型 / 第二个免费模型 三家各自给图表方案，magpie 路由 AI 综合一份统一清单。三家分工倾向：数据精度与口径辨析图 第二模型 强，历史时序与区域语境图 另一模型 强，论证流锚定与跨节衔接图 magpie 路由 AI 强
 
-两种模式下，最终交付都是 Claude 整合的一份统一图表清单，不拼接三家原文。
+两种模式下，最终交付都是 magpie 路由 AI 整合的一份统一图表清单，不拼接三家原文。
 
 **outline 版本号管理**：
 
@@ -523,11 +527,11 @@ AI 绝对不做：
 
 **关键问题**：把图表与文献组织成研报语言。
 
-**主导**：Claude solo 全程（初稿 + 自润色 + 格式 / 渲染调优）。critique 留到步骤 9。
+**主导**：magpie 免费优先单路由 全程（初稿 + 自润色 + 格式 / 渲染调优）。critique 留到步骤 9。
 
-**写作纪律**：Claude 主笔时**严格按 §7.1 与 §7.1.1 写**，目标是 step 8 终稿质量等同于经第三方文字润色。§7.1.1 7 条规则（同主题续接、列举展开、takeaway 嵌入、单位规范、书面化用词、序号起头、不用技术符号代连词）是从 DS 润色实战反推沉淀的，Claude 主动应用即可达成无需第三方润色的初稿质量，step 9 不再需要 DS 文字润色环节。
+**写作纪律**：magpie 路由 AI 主笔时**严格按 §7.1 与 §7.1.1 写**，目标是 step 8 终稿质量等同于经第三方文字润色。§7.1.1 7 条规则（同主题续接、列举展开、takeaway 嵌入、单位规范、书面化用词、序号起头、不用技术符号代连词）是从 另一模型 润色实战反推沉淀的，magpie 路由 AI 主动应用即可达成无需第三方润色的初稿质量，step 9 不再需要 另一模型 文字润色环节。
 
-**default 一气连写整稿**：Claude 按 outline 顺序写完全部章节，整稿 v1 完成后一次性交用户审。理由是 outline 已在 step 6 硬停签字、take-away 已锁定，节内反复停审节奏代价远超价值，致命错误由 step 9b critique 兜住。
+**default 一气连写整稿**：magpie 路由 AI 按 outline 顺序写完全部章节，整稿 v1 完成后一次性交用户审。理由是 outline 已在 step 6 硬停签字、take-away 已锁定，节内反复停审节奏代价远超价值，致命错误由 step 9b critique 兜住。
 
 **fallback：节内硬停**（用户明确要求时启用）。每个 section 综合完成后停下来等用户审，下一节才写。适用场景：outline 未充分锁定、take-away 仍在调整、用户希望深度参与每节论证流校准。
 
@@ -541,14 +545,14 @@ AI 绝对不做：
 | step 9 commit 数 | 通常 1-3 个（B1、B2、B3 合并） | 9 个以上（致命、严重、轻微、图脚本各占多个）|
 | 风格与论证流回头改成本 | 低，每节都审过 | 高，整稿才发现某节论证流不对要重改 |
 
-**单 LLM 模式下的额外提示**：单 LLM 模式 9b 是 Claude self-critique，独立性弱于多 LLM 模式的 GPT critique。一气连写代价在单 LLM 模式下兜底能力下降，用户对致命错误敏感时考虑启用节内硬停 fallback。
+**单 magpie 路由模式下的额外提示**：单 magpie 路由模式 9b 是 magpie 路由自评，独立性弱于magpie 多模型模式的 第二模型 critique。一气连写代价在单 magpie 路由模式下兜底能力下降，用户对致命错误敏感时考虑启用节内硬停 fallback。
 
 **操作顺序**：
-1. Claude 按节写初稿（v1.0），**逐节自检 §7.1.1 6 条规则**（句号续接 / 列举冒号 / 嵌入 takeaway / ppts 改个百分点 / 书面化连接词 / 序号起头）。同时**对照 outline 合同逐节做深度自检**：每节都带上它计划的图，且不止 1-2 段的偷懒信号（step 4）；某节比合同 takeaway 承诺的更薄就回 step 5 / 7 补料，而不是用废话填充
+1. magpie 路由 AI 按节写初稿（v1.0），**逐节自检 §7.1.1 6 条规则**（句号续接 / 列举冒号 / 嵌入 takeaway / ppts 改个百分点 / 书面化连接词 / 序号起头）。同时**对照 outline 合同逐节做深度自检**：每节都带上它计划的图，且不止 1-2 段的偷懒信号（step 4）；某节比合同 takeaway 承诺的更薄就回 step 5 / 7 补料，而不是用废话填充
 2. 每节 v1 完成后交用户审「结构 + 数据 + 论证」
 3. 整稿 v1.0 完成后做渲染 / 字体 / YAML 调优（v1.1 → v1.x），正文不动
-4. 步骤 8 终版 = Claude 纯版，**快照到 `_process/draft_v1_claude.qmd`**（步骤 9 改文字前必须先落盘这一份，否则没有「纯 Claude 基线」可回溯）
-5. 进步骤 9（GPT critique → verifying → 用户 sign off）
+4. 步骤 8 终版 = magpie 路由 AI 纯版，**快照到 `_process/draft_v1_claude.qmd`**（步骤 9 改文字前必须先落盘这一份，否则没有「纯 magpie 路由 AI 基线」可回溯）
+5. 进步骤 9（第二模型 critique → verifying → 用户 sign off）
 
 **写作前自检清单**（每节 v1 完成立刻跑）：
 
@@ -572,7 +576,7 @@ AI 绝对不做：
 2. `make_fig_X_*.py` 里 title / source / note 有没有也写这两个数？写的话是否一致？
 3. 渲染后的 fig PDF（打开 JPG 看）轴值 / data label 是否对应 16% / 24%？
 
-任何一处不一致，**当节就改对**，不要拖到 step 9b 让 GPT 来 catch（本项目 9b 一次性发现 18 张图脚本字符串与 CSV / 正文不一致——proactive 比 reactive 省 3 倍工作量）。
+任何一处不一致，**当节就改对**，不要拖到 step 9b 让 第二模型 来 catch（本项目 9b 一次性发现 18 张图脚本字符串与 CSV / 正文不一致——proactive 比 reactive 省 3 倍工作量）。
 
 **定稿计数门（反偷懒，见 §7.4）**：整稿 v1 完成后、交用户前，跑 §7.4 计数门并把**实测数字**（页数、图数、字数）贴进汇报里，和 grep 红线一样。签字的 step 6 outline 合同与 heavy 体量带（30-40 页 / 25-35 图 / 1.5 万字）是地板。**任何一维明显低于地板（< 25 页或 < 20 图，按 step 4），就不能宣称稿件完成**——说清哪一维不足，回 step 5（补搜）/ 6（加章）/ 7（加图）。这道门只能靠真实覆盖深度通过：**不准**用废话填充（抒情铺垫、重复论点、把一个论证切成零碎短句）或编造数字（§5.2）补缺口。若真实素材确实够不到体量带，就明确告诉用户、而不是注水——但 heavy 报告远低于体量带，几乎总意味着 step 5 补搜或 step 6 outline 做得太浅，而非话题已经写尽。
 
@@ -586,11 +590,11 @@ AI 绝对不做：
 
 **三子步串行**：
 
-- **9b · critique 与 Claude 三批整合 v2**（按 LLM 模式分双轨）
+- **9b · critique 与 magpie 路由 AI 三批整合 v2**（按 模型 模式分双轨）
 - **9c · verifying skill 核未闭合 caveat，落 v2.x**
 - **9d · 用户 sign off**（硬停 gate）
 
-子步编号沿用 9b / 9c / 9d，不重编为 9a / 9b / 9c，理由是与早期版本的子步号保持稳定，便于跨版本对照阅读。原 9a DS 文字润色子步在本版本删除（DS 教学价值已沉淀到 §7.1.1，Claude step 8 主动应用即可达成等同质量）。
+子步编号沿用 9b / 9c / 9d，不重编为 9a / 9b / 9c，理由是与早期版本的子步号保持稳定，便于跨版本对照阅读。原 9a 另一模型 文字润色子步在本版本删除（另一模型 教学价值已沉淀到 §7.1.1，magpie 路由 AI step 8 主动应用即可达成等同质量）。
 
 **版本号命名约定**：
 
@@ -602,52 +606,52 @@ AI 绝对不做：
 
 ---
 
-#### 9b · critique 与 Claude 三批整合 v2（双轨）
+#### 9b · critique 与 magpie 路由 AI 三批整合 v2（双轨）
 
-**双轨流程**（按 onboarding 锁定的 LLM 模式分）：
+**双轨流程**（按 onboarding 锁定的 模型 模式分）：
 
-##### 单 LLM 模式（default）：Claude self-critique
+##### 单 magpie 路由模式（default）：magpie 路由自评
 
-1. Claude 在独立对话或独立上下文里**重新加载 step 8 终稿**（避免上下文偏向），按下面 6 类视角对全稿做一遍 self-critique，产出 critique 清单落 `_process/critique_v2_self.md`：
+1. magpie 路由 AI 在独立对话或独立上下文里**重新加载 step 8 终稿**（避免上下文偏向），按下面 6 类视角对全稿做一遍 self-critique，产出 critique 清单落 `_process/critique_v2_self.md`：
    - **事实与数据**：每个数字、年份、人名、机构名都必须能定位到原始来源，引用键真在 `references.bib`
    - **跨节口径一致**：同一指标在不同节里的数字、单位、口径一致
    - **引用支撑**：`[@xxx]` 对应文献真支持文中陈述（不能挂羊头卖狗肉）
    - **论证流**：各节衔接，结论逐级支撑
    - **图脚本与 CSV 与正文三方一致**：图 title、source、note 与 CSV 数据、正文引用三方对齐（本项目曾经一次性暴露 18 张图脚本字符串不一致，是高频踩坑点）
    - **语言规范**：见 §七 写作规范
-2. Claude 按 B1 / B2 / B3 分批整合 critique 清单
+2. magpie 路由 AI 按 B1 / B2 / B3 分批整合 critique 清单
 3. 三批每批一个 commit + 决策日志 → `_process/v2_integration_log.md`
 
-**单 LLM 模式的独立性弱**：Claude 自评同一稿件无第二视角，漏致命错误风险高于多 LLM 模式。三条对冲：
+**单 magpie 路由模式的独立性弱**：magpie 路由 AI 自评同一稿件无第二视角，漏致命错误风险高于magpie 多模型模式。三条对冲：
 - 关键事实仍按下方「不盲信」原则处置，独立读原始资料核验
 - 9c verifying 严格执行不偷工
 - 派生稿发布前用户自己再通读一遍
 
-##### 多 LLM 模式：GPT critique
+##### magpie 多模型模式：第二模型 critique
 
-1. step 8 终稿交 GPT
-2. GPT 产出完整 critique → `_process/critique_v2_gpt.md`
-3. Claude 分批整合（**critique 条数 > 30 时按三批切分，< 30 可单批**）
+1. step 8 终稿交 第二模型
+2. 第二模型 产出完整 critique → `_process/critique_v2_gpt.md`
+3. magpie 路由 AI 分批整合（**critique 条数 > 30 时按三批切分，< 30 可单批**）
 4. 三批每批一个 commit + 决策日志 → `_process/v2_integration_log.md`
 
-**critique 独立性原则**：9b critique LLM 与 step 8 主笔 LLM 不重叠。多 LLM 模式下 step 8 是 Claude solo、9b 是 GPT critique，独立性自然满足。**不使用 DS critique**（critique 独立性 GPT 已够，且 DS 看不到 PDF 有结构性盲区）。
+**critique 独立性原则**：9b critique 模型 与 step 8 主笔 模型 不重叠。magpie 多模型模式下 step 8 是 magpie 免费优先单路由、9b 是 第二模型 critique，独立性自然满足。**不使用 另一模型 critique**（critique 独立性 第二模型 已够，且 另一模型 看不到 PDF 有结构性盲区）。
 
 ##### 两模式共用的整合分批与不盲信原则
 
 **B1 / B2 / B3 三批分类**：
 - **B1 · 轻修**：语言规范红线（ppts 改为「个百分点」、中英混写、抒情铺垫等）与图脚本 / CSV / 正文「数字硬一致性」错误
-- **B2 · 致命与严重**：事实层、口径层、引用层修订。关键事实判断 Claude 必须**独立核验**（读原始资料），不盲信 critique；处置往「降级加 caveat」方向靠，保留信息密度同时明示不确定性
+- **B2 · 致命与严重**：事实层、口径层、引用层修订。关键事实判断 magpie 路由 AI 必须**独立核验**（读原始资料），不盲信 critique；处置往「降级加 caveat」方向靠，保留信息密度同时明示不确定性
 - **B3 · 图脚本字符串修订 + 全部重渲 + PDF 验证**
 
-人不裁定 B1 / B2 / B3 分类，信任 Claude 三档处置 + 决策日志事后审计。
+人不裁定 B1 / B2 / B3 分类，信任 magpie 路由 AI 三档处置 + 决策日志事后审计。
 
-**Claude 整合时的「不盲信」原则**：critique 给的关键事实判断（如「数字错」「来源不支持」），Claude 必须**独立读原始资料核验**。三种处置方向：
+**magpie 路由 AI 整合时的「不盲信」原则**：critique 给的关键事实判断（如「数字错」「来源不支持」），magpie 路由 AI 必须**独立读原始资料核验**。三种处置方向：
 
 - 核验后判断 critique 对，按 critique 修订
 - 核验后判断 critique 错，在决策日志记录否决理由，保留原文
 - 核验后判断 critique 部分对，把强结论降级为「按媒体报道」「本研究估算」「待补源」等 caveat 表达，保留信息密度
 
-红线：critique 是对照参考，不是拼贴素材。Claude 综合 critique 时必须经过统一叙述声音重写，让读者读不出「哪段是哪家」。
+红线：critique 是对照参考，不是拼贴素材。magpie 路由 AI 综合 critique 时必须经过统一叙述声音重写，让读者读不出「哪段是哪家」。
 
 ---
 
@@ -683,18 +687,18 @@ AI 绝对不做：
 
 **关键问题**：v2.x PDF 在用户手上读完之后，是否还有人类视角才能发现的问题？
 
-9d 是 step 9 的最后一道 gate，**硬停**：Claude 不能跳过 9d 直接进 step 10。
+9d 是 step 9 的最后一道 gate，**硬停**：magpie 路由 AI 不能跳过 9d 直接进 step 10。
 
 **流程**：
 
-1. v2.x 重渲 PDF 后，Claude 把 `7_draft/draft.pdf` 交用户
+1. v2.x 重渲 PDF 后，magpie 路由 AI 把 `7_draft/draft.pdf` 交用户
 2. 用户**通读全文 PDF**，重点关注：
-   - 论证流是否站得住（人读 vs LLM critique 的盲区）
+   - 论证流是否站得住（人读 vs 模型 critique 的盲区）
    - 图表视觉效果（spec §四 明文 AI 不做视觉检查，9d 是视觉自检唯一时机）
    - 公众号或 LinkedIn 派生的目标读者代入感（target reader test）
-   - 措辞或立场是否需要软化或加强（critique LLM 不掌握用户的真实表达意图）
+   - 措辞或立场是否需要软化或加强（critique 模型 不掌握用户的真实表达意图）
 3. 用户产出修改意见清单（口头、文字、直接 PDF 批注均可）
-4. Claude 整合意见落 v2.2 / v3（视改动量决定版本号）
+4. magpie 路由 AI 整合意见落 v2.2 / v3（视改动量决定版本号）
 5. 9d 可能反复（v3 落 v4）直到用户满意
 6. 用户最终签字，9d 通过，进 step 10
 
@@ -933,67 +937,56 @@ AI 在每个步骤内可以主导执行，但**「是否进入下一步」必须
 
 ---
 
-## 六、多 LLM 协作机制
+## 六、magpie 多模型协作机制
 
-### 6.1 哪些步骤需要多 LLM
+### 6.1 哪些步骤需要多模型
 
-onboarding §1.3 第 1 步用户裁定「是否采用多 LLM 协作模式」，锁定全程。两种模式下各步骤协作方式如下：
+onboarding §1.3 第 1 步由用户裁定「是否采用 magpie 多模型协作模式」，锁定全程。所有调用仍走本机 magpie 网关——「多模型」指在同一网关后选择 2-3 个**不同模型家族**，不是手动切换终端或厂商。
 
-| 步骤 | 单 LLM 模式（default） | 多 LLM 模式 |
+| 步骤 | 单路由模式（default） | magpie 多模型模式 |
 |---|---|---|
-| 2 广搜 | Claude solo，配合 iFinD MCP 或 `financial-data-sources` skill 与用户手动补关键 PDF | Claude + GPT + DS 三家平行搜，Claude 综合 |
-| 5 补搜 | Claude solo 与用户手动补关键文献全文 | 三家平行（聚焦子问题），Claude 综合 |
-| 6 outline 图表 brainstorm | Claude 一稿，用户裁定 | 三家给方案，Claude 综合 |
-| 7 数据脚本图表 | Claude solo | Claude solo |
-| 8 draft 主笔 | Claude solo（按 §7.1 与 §7.1.1 自润色，目标质量等同经第三方润色） | Claude solo |
-| 9b critique | Claude self-critique（按 6 类视角自评：事实、口径、引用、跨节一致、论证流、语言规范），分三批整合 | GPT critique，Claude 三批整合（B1 / B2 / B3）v3 |
-| 9c verifying | Claude solo 调用 `market-research-skills:verifying` skill（两模式共用） | 同左 |
-| 9d sign off | 用户通读 PDF，反复直到签字（两模式共用） | 同左 |
+| 2 广搜 | 免费优先单路由，配合 iFinD MCP 或 `financial-data-sources`、用户手动补关键 PDF | 三个模型家族平行搜，主路由综合 |
+| 5 补搜 | 免费优先单路由 + 用户补关键全文 | 三家平行（聚焦子问题），主路由综合 |
+| 6 outline / 图表 brainstorm | 主路由一稿，用户裁定 | 三家给方案，主路由综合 |
+| 7 数据脚本 / 图表 | 免费优先单路由 | 免费优先单路由 |
+| 8 draft 主笔 | 免费优先单路由（按 §7.1 / §7.1.1 自润色，目标质量等同第三方润色） | 免费优先单路由 |
+| 9b critique | magpie 路由自评（6 类视角：事实、口径、引用、跨节一致、论证流、语言规范），分三批整合 | **不同模型家族**做 critique，主路由分三批整合（B1 / B2 / B3） |
+| 9c verifying | 免费优先单路由调用 `market-research-skills:verifying`（两模式共用） | 同左 |
+| 9d sign-off | 用户通读 PDF，反复直到签字（两模式共用） | 同左 |
 
-**单 LLM 模式 self-critique 的独立性弱**：Claude 自评同一稿件无独立第二视角，漏致命错误风险高于多 LLM 模式。三条对冲建议：① 派生稿发布前用户自己再通读一遍；② 关键事实仍按 9b 处置框架要求独立核验原始资料；③ 9c verifying 严格执行不偷工。
+**单路由自评为什么弱**：同一路由评自己的稿子，没有独立第二视角。三条对冲：① 发布前用户自己再通读一遍；② 关键事实仍按 §9b 独立核验原始资料；③ 9c verifying 严格执行不偷工。
 
-**多 LLM 模式的切换成本**：用户需要手动切到 GPT plugin 或网页运行 critique，节奏代价显著。仅在用户明确要求或项目预期 GPT 独立 critique 价值高（如复杂跨源对比、关键数字密集、对外发布前需第二视角）时启用。
+**多模型成本**：消耗更多 token；若涉及付费模型或外部多模型调用，会触发三级确认。仅在用户明确要求，或项目确实需要独立 critique（复杂跨源对比、关键数字密集、对外发布前第二视角）时启用。未确认则留在免费单路由。
 
-**DS 不再作 default**：实战实测 DS 文字润色的教学价值已沉淀到 §7.1.1，Claude 按规则自润色可达等同质量；DS critique 在多 LLM 模式下由 GPT 承担（critique 独立性 GPT 已够）。DS 留作未来 fallback 的可能性，不在 default 路径。
+### 6.2 各模型家族相对优势（实战观察，迭代中）
 
-### 6.2 三家相对优势（实战观察，迭代中）
-
-| 工具 | 优势 |
+| magpie 后的模型家族 | 优势 |
 |---|---|
-| **GPT** | 结构化框架、数据精度、口径辨析、研究纪律提示 |
-| **DeepSeek** | 历史溯源、中文 / 区域语境、时间序列、视觉细节、原文术语。**中文长句节奏 / 连接词 / 自然度的教学价值已沉淀至 §7.1.1**（实战学习自 DeepSeek 润色）；步骤 9 default 不再调用 DS，Claude 在 step 8 直接应用 §7.1.1；DS 留作 step 9 fallback（GPT critique 暴露 ≥ 10 条「文字明显需改进」时启用） |
-| **Claude** | 数据档案、Web 抓取、研报论证流、综合定稿、全程裁判 |
+| **家族 A · 结构化 / 推理** | 框架、数据精度、口径辨析、研究纪律提示 |
+| **家族 B · 中文 / 区域** | 历史溯源、中文与区域语境、时间序列、视觉细节、原文术语 |
+| **主笔路由** | 数据档案、Web 抓取、研报论证流、综合定稿、全程裁判 |
 
-模型代际更替会改变这张表，每个项目结束后由用户在项目级 CLAUDE.md 中更新观察。
+模型代际更替会改变这张表；每个项目结束后由用户在项目级 CLAUDE.md 中更新观察。
 
 ### 6.3 综合的红线
 
-不要拼接三家文字。综合后的成文必须经过统一的叙述声音重写，让读者读不出「哪段是哪家」。三家原稿的价值在素材，不在语句。
+不要拼接各家文字。综合后的成文必须经过统一叙述声音重写，让读者读不出「哪段是哪家」。各家原稿的价值在素材，不在语句。
 
-### 6.4 多 LLM 并发时的状态机
+### 6.4 magpie 多模型并发时的状态机
 
-如果在 Claude Code 里跑多 LLM 协作（用 sub-agent 或人工切换），并发期各家**只在自己的子目录下产出**（如 `_process/<llm>/`），不直接修改共享状态文件（如 outline.md、`_state.md`）。共享状态由综合者（Claude）在 Round 结束时统一更新，避免 last-write-wins 冲突。
+通过 magpie 跑多模型协作（sub-agent 或串行调用）时，各家**只在自己的子目录下产出**（如 `_process/<model>/`），不直接修改共享状态文件（如 outline.md、`_state.md`）。共享状态由综合者（主路由）在每轮结束时统一更新，避免 last-write-wins 冲突。
 
 ### 6.5 错误诊断顺序：模型 → prompt → 通道
 
-跨 LLM / 跨工具调用失败时，按这个顺序定位根因，不要乱跳：
+跨模型 / 跨工具调用失败时，按这个顺序定位根因，不要乱跳：
 
-1. **模型层**：模型本身是否与场景兼容？关键追问：
-   - 是否 Thinking / reasoner / o 系列（长 reasoning 静默期，与 streaming 中间层易冲突）？
-   - 是否 context window 不够？
-   - 是否模型版本太新 / 太旧，工具调用 schema 不匹配？
-2. **prompt 层**：prompt 设计是否合理？关键追问：
-   - 任务太大 / 输出太长，是否要拆分？
-   - prompt 是否冗余 / 含特殊字符触发 escape 问题？
-   - 输出格式约束是否模型能稳定遵守？
-3. **通道层**：访问通道是否稳定？关键追问：
-   - VSCode Copilot / Claude Code CLI / 浏览器，哪条链路？
-   - 网络 / 代理 / VPN 异常？
-   - 中间层（Copilot streaming gateway）是否有断流问题？
+1. **模型层**：模型本身是否与场景兼容？是否 Thinking / reasoning 模型（长静默期与 streaming 冲突）？context window 是否够？模型版本 / 工具调用 schema 是否不匹配？
+2. **prompt 层**：prompt 是否合理？任务太大 / 输出太长？特殊字符触发 escape 问题？输出格式约束模型能否稳定遵守？
+3. **通道层**：网关 / 网络是否稳定？走 IDE、CLI 还是浏览器？代理 / VPN 是否异常？streaming 中间层是否断流？
 
-**反面案例（实战 DS 调试踩坑）**：连续 3 轮 DS 失败，Claude 直接跳到「prompt 太长」，调小 prompt 失败，再跳到「通道不稳」，推荐换 Cline。实际根因是用户选了 `DeepSeek V4 Pro (Thinking Max)`（模型层），切到普通版立刻通。4 轮浪费根因是没先查模型层。
+**反面案例（实战调试）**：连续 3 轮失败后，AI 直接跳到「prompt 太长」，调小 prompt 仍失败，再跳到「通道不稳」并建议换工具。实际根因是用户选了 Thinking / Max 档（模型层），切到普通档立刻通。4 轮浪费的根因是没先查模型层。
 
-stack trace signature 也是误导陷阱：`Copilot Request id` 出现在 trace 里只说明 Copilot 是请求经手者，不等于 Copilot 是根因。
+stack trace signature 也会误导：`Copilot Request id` 只说明 Copilot 经手了请求，不等于它是根因。
 
 ---
 
@@ -1018,9 +1011,9 @@ stack trace signature 也是误导陷阱：`Copilot Request id` 出现在 trace 
 - **不造比喻**。初稿容易借自创 metaphor（如「钢底」「叙事软着陆」「会计魔术」之类）取巧，但读者没有作者上下文，需要重读两遍才能理解，可读性打折。定稿前把每个自创 metaphor 换成方法论或行业通用术语，让没有背景的读者一次读懂，例如「钢底」改为「硬口径」、「叙事软着陆」改为「降标或重定义」。仅当引言或结语承担破题时，可保留少量已成共识的行业 metaphor（如 IMF 自用的 moving goalposts、Dutch disease），正文论述一律换硬术语
 - **摘要、引言、结语三段必须单独二轮重写**。这三段是「框口段」，承担读者的第一印象与最后印象。整稿一气写下来的版本通常碎、缺 insight、缺展望，读者读完抓不到 take-away。定稿前单独二轮重写这三段，目标有三：一是去掉抒情铺垫与碎碎念，二是加一条核心 insight（读者读完能带走的判断），三是引言补论证地图（这篇报告将论证什么、按什么顺序）、结语补展望（未来几年要看哪些变量）
 
-#### 7.1.1 中文长句节奏（实战学习自 DeepSeek 润色）
+#### 7.1.1 中文长句节奏（实战学习自 第二个免费模型 润色）
 
-「句子要短」的本意是不写复杂从句，**不是**「同一论点的支撑细节也用句号断开」。Claude 初稿的常见反模式是把一个论点的论据与 takeaway 切成多个独立短句，节奏过碎；与之并存的另一反模式是用「→」「/」「+」等技术符号代替书面连词，节奏快但读者要 mental-decode 一次。下面 7 条是 v1 经 DS 润色与后续实战积累的可执行细则，写初稿时直接遵循：
+「句子要短」的本意是不写复杂从句，**不是**「同一论点的支撑细节也用句号断开」。magpie 路由 AI 初稿的常见反模式是把一个论点的论据与 takeaway 切成多个独立短句，节奏过碎；与之并存的另一反模式是用「→」「/」「+」等技术符号代替书面连词，节奏快但读者要 mental-decode 一次。下面 7 条是 v1 经 另一模型 润色与后续实战积累的可执行细则，写初稿时直接遵循：
 
 1. **同主题支撑句用逗号 / 分号续接**，不用句号。`「升至 30%。这是真改革。」` 改为 `「升至 30%，这是真改革。」`
 2. **多源 / 多项列举用「主句：项 1，项 2，项 3。」一气展开**，不要碎成「四个数字。项 1。项 2。项 3。」
@@ -1078,7 +1071,7 @@ step 8 一气连写整稿时这三段往往最弱，因为论证流尚在成型�
 
 #### 7.1.3 中文书面化对照表
 
-§7.1.1 第 5 条「书面化连接词偏好」给了几个对照，本节扩展为完整对照表。Claude 写初稿时直接按右列写，省去 step 9 文字润色环节。表分三类。
+§7.1.1 第 5 条「书面化连接词偏好」给了几个对照，本节扩展为完整对照表。magpie 路由 AI 写初稿时直接按右列写，省去 step 9 文字润色环节。表分三类。
 
 ##### 类 1：口语 → 书面
 
@@ -1267,11 +1260,11 @@ self-check 失败时回到原段修订，不在派生品上 patch。每个项目
 ├── 2_research/                       步骤 2 + 5：资料搜集
 │   ├── research.md                   [成果] 统一台账（七类来源覆盖 + 重要性 / 路径 / 字段 / 频率）
 │   ├── pdfs/                         全文 PDF 平铺，命名 `<编号> <机构> <标题>.pdf`
-│   └── _process/                     [过程] 多 LLM 平行搜索原始稿
+│   └── _process/                     [过程] magpie 多模型 平行搜索原始稿
 │
 ├── 3_outline/                        步骤 6：详细 outline
 │   ├── outline.md                    [成果] draft → 步骤 7 后回填为 final
-│   └── _process/                     [过程] 多 LLM brainstorm 图表清单候选
+│   └── _process/                     [过程] magpie 多模型 brainstorm 图表清单候选
 │
 ├── 4_data/                           步骤 7：数据底稿
 │   ├── data.md                       [成果] 数据档案索引（每个 CSV 的来源 / 口径 / 字段 / 单位）
@@ -1292,7 +1285,7 @@ self-check 失败时回到原段修订，不在派生品上 patch。每个项目
 ├── 7_draft/                          步骤 8 + 9：写作 + 精修
 │   ├── draft.md                      [成果] 主报告（用 Quarto 时扩展名为 `draft.qmd`，按工具栈定）
 │   ├── references.bib                [成果] Pandoc 引用库
-│   └── _process/                     [过程] 节内迭代稿、DeepSeek 文字加工 v1.5、Claude 整合 v2 中间稿、multi-LLM critique 原稿（详见 §11 `_process/` 内容指南）
+│   └── _process/                     [过程] 节内迭代稿、第二个免费模型 文字加工 v1.5、magpie 路由 AI 整合 v2 中间稿、magpie 多模型 critique 原稿（详见 §11 `_process/` 内容指南）
 │
 ├── 8_publication/                    步骤 10：定稿派生（主报告 PDF 留在 7_draft/，不在此处复制）
 │   ├── 1_word/                       10b Word docx 派生（Pandoc 自动生成，给客户审阅或批注）
@@ -1324,15 +1317,15 @@ self-check 失败时回到原段修订，不在派生品上 patch。每个项目
 | 目录 | 应放内容 | 命名约定 |
 |---|---|---|
 | `1_topic/_process/` | 步骤 3 AI 建议的 2-3 个候选方向、用户与 AI 的话题讨论备忘 | `_options.md`（方向候选清单）+ 对话备忘按需 |
-| `2_research/_process/` | 步骤 2 多 LLM 平行搜索原始稿（Claude / GPT / DS 各自的资料台账） | `research_<llm>.md`（如 `research_gpt.md`） |
-| `3_outline/_process/` | 步骤 6 多 LLM brainstorm 的图表清单候选；同步骤产出的 outline 候选 | `outline_<llm>.md` / `figures_brainstorm_<llm>.md` |
-| `7_draft/_process/` | 步骤 8 各节迭代稿、DeepSeek 文字加工的 v1.5、Claude 整合的 v2 中间稿；步骤 9 multi-LLM critique 原稿（GPT/DS critique）+ Claude 综合时的逐条决策记录 | `draft_<vX>_<who>.qmd`（如 `draft_v1_claude.qmd` / `draft_v15_deepseek.qmd` / `draft_v2_claude.qmd`）；critique 用 `critique_<llm>.md`（如 `critique_gpt.md`）；决策记录 `critique_decisions.md` |
+| `2_research/_process/` | 步骤 2 magpie 多模型 平行搜索原始稿（magpie 路由 AI / 第二模型 / 另一模型 各自的资料台账） | `research_<llm>.md`（如 `research_gpt.md`） |
+| `3_outline/_process/` | 步骤 6 magpie 多模型 brainstorm 的图表清单候选；同步骤产出的 outline 候选 | `outline_<llm>.md` / `figures_brainstorm_<llm>.md` |
+| `7_draft/_process/` | 步骤 8 各节迭代稿、第二个免费模型 文字加工的 v1.5、magpie 路由 AI 整合的 v2 中间稿；步骤 9 magpie 多模型 critique 原稿（第二模型/另一模型 critique）+ magpie 路由 AI 综合时的逐条决策记录 | `draft_<vX>_<who>.qmd`（如 `draft_v1_claude.qmd` / `draft_v15_deepseek.qmd` / `draft_v2_claude.qmd`）；critique 用 `critique_<llm>.md`（如 `critique_gpt.md`）；决策记录 `critique_decisions.md` |
 
 通用规则：
 
 - **`_process/` 是过程材料区，不对外**。最新的对外可用版本永远是父目录的成果 md（`topic.md` / `outline.md` / `draft.qmd` 等）
 - **每次大改前先 cp 一份到 `_process/`**（如 `cp 7_draft/draft.qmd 7_draft/_process/draft_v1_claude.qmd`），再原地改
-- **多 LLM 并发时各家产出只进自己的文件**，不直接覆盖共享成果 md。综合者（Claude）整合后才更新成果 md
+- **magpie 多模型 并发时各家产出只进自己的文件**，不直接覆盖共享成果 md。综合者（magpie 路由 AI）整合后才更新成果 md
 - `5_scripts/` `6_figures/` 不设 `_process/`：脚本与图的迭代由 git 管理，留中间稿反而混乱
 
 **各成果 md 的最小骨架**（脚手架阶段直接建空文件 + 一段用途说明，后续步骤填充）：
@@ -1372,7 +1365,7 @@ self-check 失败时回到原段修订，不在派生品上 patch。每个项目
 
 ## 十二、`_state.md` 模板
 
-`_state.md` 是项目根目录下的**唯一**进度文件，任何 LLM / 用户进入项目第一眼看它。它的存在解决一个核心问题：**新会话如何快速接住上下文**。
+`_state.md` 是项目根目录下的**唯一**进度文件，任何 模型 / 用户进入项目第一眼看它。它的存在解决一个核心问题：**新会话如何快速接住上下文**。
 
 ### 12.1 责任分离
 
@@ -1387,7 +1380,7 @@ self-check 失败时回到原段修订，不在派生品上 patch。每个项目
 ```markdown
 # 项目级进度面板 · _state.md
 
-> 项目级**唯一**进度文件。任何 LLM / 用户进入项目第一眼看这里。
+> 项目级**唯一**进度文件。任何 模型 / 用户进入项目第一眼看这里。
 > 责任分离：CLAUDE.md = 规则，本文件 = 状态，子目录文件 = 内容。
 
 ---
@@ -1451,11 +1444,11 @@ self-check 失败时回到原段修订，不在派生品上 patch。每个项目
 
 ## 维护规则
 
-- 每个步骤切换时由触发者（LLM 或用户）更新「▶ 当前位置」段
+- 每个步骤切换时由触发者（模型 或用户）更新「▶ 当前位置」段
 - 重要里程碑（步骤完成、用户签字落锁）必须能 git tag + 同步本文件
 - 「关键交付物索引」只放文件路径，不展开细节（细节放在产出文件里）
 - 「git 时间线」截最近 10 commit，便于一眼看动态
-- 多 LLM 并发期各家**只在自己的 `_process/<llm>/` 子目录产出**，不直接修改本文件，由综合者（Claude）在 Round 结束统一更新
+- magpie 多模型 并发期各家**只在自己的 `_process/<llm>/` 子目录产出**，不直接修改本文件，由综合者（magpie 路由 AI）在 Round 结束统一更新
 
 ---
 
@@ -1463,7 +1456,7 @@ self-check 失败时回到原段修订，不在派生品上 patch。每个项目
 
 | 时间 | 操作者 | 操作 |
 |---|---|---|
-| YYYY-MM-DD | Claude / 用户 | 初始化 _state.md |
+| YYYY-MM-DD | magpie 路由 AI / 用户 | 初始化 _state.md |
 ```
 
 ### 12.3 何时更新
@@ -1489,7 +1482,7 @@ self-check 失败时回到原段修订，不在派生品上 patch。每个项目
 
 留给未来项目验证的开放问题：
 
-1. **多 LLM 协作的实际收益**：步骤 2 / 5 / 6 / 9 都设计了多 LLM，但每多一家成本都上升（切换 LLM、维护并发产出、综合）。在哪些步骤多 LLM 真正显著优于单 LLM？需要在后续项目中持续观察并记录边际收益。
+1. **magpie 多模型 协作的实际收益**：步骤 2 / 5 / 6 / 9 都设计了magpie 多模型，但每多一家成本都上升（切换 模型、维护并发产出、综合）。在哪些步骤magpie 多模型 真正显著优于单 magpie 路由？需要在后续项目中持续观察并记录边际收益。
 
 2. **图表前置的迭代深度**：步骤 6 ↔ 7 是双向反馈，但来回迭代几轮才合理？在简单项目可能 1 轮，复杂项目可能 3-4 轮。需要观察。
 
@@ -1576,7 +1569,7 @@ self-check 失败时回到原段修订，不在派生品上 patch。每个项目
 - 国际机构 / 投行 / 咨询的官方报告主要英文，中文摘要常见于中资研究与中文媒体
 - 中国 / 中东 / 非洲等区域的本地数据与政策动态，中文一手资料常比英文转述更准
 - 政策文件原文常有官方多语版本（如中东国家发展规划同时出阿拉伯文与英文），必要时双版对照
-- 多 LLM 平行搜分工：Claude 偏英文学术与投行，DeepSeek 偏中文与区域语境，GPT 平衡
+- magpie 多模型 平行搜分工：magpie 路由 AI 偏英文学术与投行，第二个免费模型 偏中文与区域语境，第二模型 平衡
 
 ### A.9 来源覆盖自检
 

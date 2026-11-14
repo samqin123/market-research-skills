@@ -1,0 +1,12 @@
+# Acceptance 6 — pack.sh --all
+
+Generated / 已生成: releases/analyst-research.zip
+Generated / 已生成: releases/local-vault.zip
+Generated / 已生成: releases/topic-brief.zip
+Generated / 已生成: releases/verifying.zip
+
+--- zip contents check: no exact .env / no logs ---
+clean releases/analyst-research.zip
+clean releases/local-vault.zip
+clean releases/topic-brief.zip
+clean releases/verifying.zip

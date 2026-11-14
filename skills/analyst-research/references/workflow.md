@@ -6,7 +6,7 @@ The actual step-by-step workflow lives in three mode-specific files. After the u
 |---|---|---|---|
 | `light` | `workflow_light.md` | 6 | Soft stops only. No charts. Pure markdown footnote citations. |
 | `medium` | `workflow_medium.md` | 8 | One hard stop (sign-off after draft). 3-8 charts. Footnote citations. |
-| `heavy` | `workflow_heavy.md` | 11 | Three hard stops (outline / draft / final). 20-35+ charts. BibTeX + APA. Optional multi-LLM. |
+| `heavy` | `workflow_heavy.md` | 11 | Three hard stops (outline / draft / final). 20-35+ charts. BibTeX + APA. Optional magpie multi-model. |
 
 Each mode's workflow file is **self-contained** and includes:
 

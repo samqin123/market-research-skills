@@ -6,6 +6,77 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) an
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-11-14
+
+Fork adaptation release. Upstream base: `genli-ai/market-research-skills` v1.7.1. No GitHub remote,
+no push, no Release; this is a local checkpoint on branch `adapt/v2`.
+
+### Added
+
+- **Shared cost protocol** at the repo root: `references/cost-routing.md` (stage → free/paid model
+  tier), `references/cost-gate.md` (three-level estimate/confirmation gate, overrun guard,
+  end-of-run consumption line), `references/pricing.md` (the only price source; unknown =
+  unmetered), and `scripts/estimate.py` (deterministic, never calls a model; exits 10 = awaiting
+  confirmation, 3 = overrun guard, 0 = proceed).
+- **magpie routing** for script-side LLM calls: `skills/local-vault/scripts/magpie_client.py`
+  (OpenAI-compatible `/v1/chat/completions`, stdlib only). Frontmatter enrichment and PPT-image
+  OCR now call magpie instead of `claude -p`; failures still degrade softly.
+- **Shared templates** at `templates/`: `classic-blue` (upstream blue preserved as optional),
+  `light-green` (**default**), `warm-paper`. Each ships `tokens.css`, a `topic-brief`
+  `briefing.html`, `analyst.css` and an `analyst.html` sample; `templates/preview/` renders the
+  same sample content through all three. The style genes (main + auxiliary) and the taste
+  self-check are recorded in `templates/README.md`.
+- `.env.example` (repo root) and expanded `skills/local-vault/scripts/.env.example`: magpie
+  base/model IDs, `ALLOW_PAID=0`, per-run/month budget caps, MinerU token placeholder.
+- `ADAPT-REPORT.md`: file-level change list, estimate-card samples, template preview paths, smoke
+  results, and open items.
+
+### Changed
+
+- **local-vault cost/routing:** all `claude -p` subprocess calls replaced with magpie;
+  `ENRICH_CLAUDE_CMD` removed, `MAGPIE_*` / budget keys added. Frontmatter enrichment uses
+  `MAGPIE_MODEL_FAST`, OCR uses `MAGPIE_MODEL_VISION`, both free-first. Batch sync is level 2;
+  MinerU cloud upload is level 3 with a separate confirmation and an explicit missing-token card.
+- **MinerU setup (六-bis):** the first-run wizard prints a bilingual reminder to apply for an
+  official API token at `https://mineru.net` and enter it; all local features still work without
+  it, and cloud-only file types are listed at the end. Token validation accepts `sk-` non-JWT API
+  keys (no hard block on JWT parse failure; a parsed `exp` still triggers an expiry reminder).
+  Missing token is called out on the estimate card and is never silently skipped.
+- **analyst-research routing language:** the three workflows, `MODE_REGISTRY`, `SKILL.md` and
+  `report_style_spec` now say "route through magpie" instead of naming a terminal/model; multi-LLM
+  became magpie multi-model. Cost cards are mandatory at onboarding (`light` L1, `medium`/`heavy`
+  L2, paid/multi-model/cloud L3).
+- **topic-brief:** default author is blank, template selection added to the parameter questions,
+  `render.py --template` defaults to `light-green`, and the level-1 cost card runs before material
+  gathering.
+- Version bumped to **2.0.0** in `plugin.json` and `marketplace.json`; README gains a "Fork
+  adaptation" section.
+
+### Removed
+
+- `verifying` and `topic-brief` scope-filter / one-line topic-block clauses (English, Chinese,
+  README and red-line references). Replaced by the **multi-source side-by-side** rule: at least two
+  authoritative sources, standpoint attribution, no single-party conclusion, fact/estimate/
+  inference separated.
+- The built-in default byline signature and the legacy author-headshot filename references; the default
+  is now an empty byline. No brand logo or brand asset is present in the repo.
+
+### Fixed
+
+- MinerU `sk-` API keys no longer fail validation as "unparseable JWT".
+- The topic-brief cover no longer renders an author cell when `author` is empty.
+- The setup wizard merges keys into an existing `.env` instead of overwriting it (preserves
+  `MINERU_TOKEN`); `.env` remains 0600 and untracked.
+- `scripts/pack.sh` now excludes `.env`, `logs/` and `*.log` from skill zips, so a packaged skill
+  can never ship a miner token or a local log.
+
+### Notes
+
+This is a fork adaptation, not an upstream release. The upstream structure is preserved: four
+skills, plugin/marketplace manifests, `scripts/pack.sh`, and English-canonical + `.zh.md` mirrors.
+Differences from upstream are the cost/routing plumbing, the controversial-topic rule, the
+templates, and the blank byline.
+
 ## [1.7.1] - 2026-06-09
 
 ### Fixed
@@ -185,7 +256,7 @@ If you had `light-research` installed via this plugin marketplace at v0.5.0, upg
 
 ### Fixed
 
-- `topic-brief`: cover author byline (e.g. "developed by Gen") was offset ~2px to the right of the brand name / issue title above it. Root cause: the nested `<table>` wrapping the author/period row in `templates/briefing.html` relied on the legacy HTML `cellspacing="0"` attribute, which modern browsers no longer fully honor. Fixed by adding CSS `border-collapse:collapse; border-spacing:0;` to the table and explicit `padding:0;` on its two `<td>` cells. Author byline now aligns flush-left with brand name and headline.
+- `topic-brief`: cover author byline (the legacy default signature, since removed in 2.0.0) was offset ~2px to the right of the brand name / issue title above it. Root cause: the nested `<table>` wrapping the author/period row in `templates/briefing.html` relied on the legacy HTML `cellspacing="0"` attribute, which modern browsers no longer fully honor. Fixed by adding CSS `border-collapse:collapse; border-spacing:0;` to the table and explicit `padding:0;` on its two `<td>` cells. Author byline now aligns flush-left with brand name and headline.
 
 ## [0.3.0] - 2026-05-13
 
@@ -195,14 +266,14 @@ If you had `light-research` installed via this plugin marketplace at v0.5.0, upg
 - `topic-brief` core capabilities:
   - 4-question parameter collection (subject / period / source preference / author byline) with smart defaults
   - Parallel material gathering (≥4 web searches + 1–2 deep fetches of the focus report)
-  - Three-state author rendering (default "developed by Gen" / explicit blank / custom byline)
+  - Three-state author rendering (legacy default signature / explicit blank / custom byline; the built-in signature was removed in 2.0.0)
   - Self-contained Python rendering pipeline (Jinja2 template + Chinese-quote auto-repair); only external dep is `jinja2`
   - 4 historical few-shot samples (3 regional + 1 red-brand) under `reference/` to anchor tone and structure
   - Self-check checklist after composition (issue_title ≤24 chars, 4 sub-sections × 3–4 items, every number traceable, every URL complete, etc.)
 - Dual-language source files for `topic-brief`:
   - `SKILL.md` (English, canonical, loaded by LLMs)
   - `SKILL.zh.md` (Chinese reference, kept in sync; excluded from `.zip` packaging)
-- `topic-brief` scope exclusions (politics / military / religion / celebrity gossip / inherently controversial topics) — replies `Out of scope. (超出能力范围)` and stops, mirroring `verifying`.
+- `topic-brief` topic-filter gate (politics / military / religion / celebrity gossip / inherently controversial topics) — one-line stop, mirroring `verifying`. **Removed in 2.0.0**; these subjects now use the multi-source side-by-side rule.
 - `topic-brief` tool-call mapping section — uses generic verbs (Search-engine query / Fetch web body / User-facing question prompt) so non-Claude terminals can adapt.
 
 ### Changed
@@ -233,7 +304,7 @@ If you had `light-research` installed via this plugin marketplace at v0.5.0, upg
   - Negative statements (unfalsifiable / find counter-example)
   - Multi-source conflicts (side-by-side + difference attribution)
 - Core rules for `verifying`:
-  - Scope exclusions: politics / military / religion / entertainment celebrity gossip / other inherently controversial topics are refused upfront — the skill replies "Out of scope" and stops
+  - Topic filter: politics / military / religion / entertainment celebrity gossip / other inherently controversial topics were stopped upfront with one line. **Removed in 2.0.0.**
   - Whitelisted primary sources (official institutions + authoritative industry + aggregator databases Statista / Wind / CEIC / SWFI / Refinitiv)
   - Three-layer search depth + download originals locally and read in full
   - Chart "meaning" verification (axes / units / start year / log vs linear)
@@ -254,6 +325,62 @@ If you had `light-research` installed via this plugin marketplace at v0.5.0, upg
 本项目遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 与 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
 ## [未发布]
+
+## [2.0.0] - 2026-11-14
+
+Fork 改造版。上游基线：`genli-ai/market-research-skills` v1.7.1。不建 GitHub 仓、不 push、不发 Release；
+这是分支 `adapt/v2` 上的本地检查点。
+
+### 新增
+
+- **共享成本协议**（仓根）：`references/cost-routing.md`（环节 → 免费/付费模型档位）、
+  `references/cost-gate.md`（三级预估确认闸口、超支守卫、结束消耗行）、`references/pricing.md`
+  （唯一价格源；未知 = 未计量）、`scripts/estimate.py`（纯本地确定性估算，绝不调模型；退出 10 = 待确认，
+  3 = 守卫触发，0 = 放行）。
+- **magpie 路由**：`skills/local-vault/scripts/magpie_client.py`（OpenAI 兼容
+  `/v1/chat/completions`，仅标准库）。frontmatter 富化与 PPT 图片 OCR 从 `claude -p` 改为 magpie；
+  失败仍软降级。
+- **共享模板** `templates/`：`classic-blue`（上游蓝，保留为可选）、`light-green`（**默认**）、
+  `warm-paper`。每套含 `tokens.css`、topic-brief `briefing.html`、`analyst.css` 与
+  `analyst.html` 示例；`templates/preview/` 用同一段内容渲染三份。风格基因（主+辅）与 taste 自检
+  记在 `templates/README.md`。
+- `.env.example`（仓根）与扩充后的 `skills/local-vault/scripts/.env.example`：magpie 地址/模型 ID、
+  `ALLOW_PAID=0`、单次/月度预算上限、MinerU token 占位。
+- `ADAPT-REPORT.md`：到文件的改动清单、预估卡实样、模板预览路径、冒烟结果、待决项。
+
+### 变更
+
+- **local-vault 成本/路由**：脚本内所有 `claude -p` 子进程调用改为 magpie；移除
+  `ENRICH_CLAUDE_CMD`，新增 `MAGPIE_*` / 预算键。frontmatter 富化用 `MAGPIE_MODEL_FAST`，
+  OCR 用 `MAGPIE_MODEL_VISION`，均免费优先。批量同步 = 二级；MinerU 云端上传 = 三级，单独确认，
+  token 缺失在卡上显式提示。
+- **MinerU 首次配置（六-bis）**：首次向导中英双语提醒去 `https://mineru.net` 申请官方 API token 并输入；
+  不填也能用全部本地功能，云端类型会在末尾列明。token 校验兼容 `sk-` 非 JWT API key
+  （不以 JWT 解析失败硬拦；解析出 `exp` 仍做过期提醒）。缺失 token 在预估卡单独提示，绝不静默跳过。
+- **analyst-research 路由表述**：三档 workflow、`MODE_REGISTRY`、`SKILL.md`、`report_style_spec`
+  改为「经 magpie 路由」，不再写死终端/模型；多 LLM 改为 magpie 多模型。onboarding 必须先出预估卡
+  （`light` 一级、`medium`/`heavy` 二级，付费/多模型/云端三级）。
+- **topic-brief**：默认署名为空；参数问题增加模板选择；`render.py --template` 默认 `light-green`；
+  采集素材前先跑一级成本卡。
+- `plugin.json` / `marketplace.json` 版本升 **2.0.0**；README 增「Fork 改造说明」。
+
+### 移除
+
+- `verifying` 与 `topic-brief` 的 scope filter / 一行式主题拦截条款（英文、中文、README、红线引用）。
+  替换为**多源并列**规则：至少两个权威来源、注明立场归属、不下单方结论、事实/估算/推断分开。
+- 内置默认署名与旧版头像文件名引用；默认署名为空。全仓无品牌 logo 或品牌素材。
+
+### 修复
+
+- MinerU `sk-` API key 不再因「JWT 无法解析」被硬拦。
+- topic-brief 封面在 `author` 为空时不再渲染作者单元格。
+- 首次向导改为按 key 合并进已有 `.env`（保留 `MINERU_TOKEN`），不再覆盖；`.env` 保持 0600 且不入库。
+- `scripts/pack.sh` 排除 `.env`、`logs/` 与 `*.log`，打包产物绝不携带 token 或本机日志。
+
+### 说明
+
+这是 fork 改造，不是上游 release。上游结构保留：四个 skill、插件/marketplace 清单、`scripts/pack.sh`、
+英文 canonical + `.zh.md` 镜像。与上游的差异在成本/路由 plumbing、争议话题规则、模板与空署名。
 
 ## [1.7.1] - 2026-06-09
 
@@ -434,7 +561,7 @@ If you had `light-research` installed via this plugin marketplace at v0.5.0, upg
 
 ### 修复
 
-- `topic-brief`：封面作者署名（如 "developed by Gen"）相对上方品牌名 / 主标题向右偏移约 2px。根因是 `templates/briefing.html` 中包裹作者/期号行的嵌套 `<table>` 只依赖了 HTML 旧属性 `cellspacing="0"`，现代浏览器已不再完全遵守该属性。修复办法是在该表上加 CSS `border-collapse:collapse; border-spacing:0;`、并在两个 `<td>` 上显式 `padding:0;`。作者署名现在与上方品牌名、标题严格左对齐
+- `topic-brief`：封面作者署名（旧版内置默认署名，已在 2.0.0 移除）相对上方品牌名 / 主标题向右偏移约 2px。根因是 `templates/briefing.html` 中包裹作者/期号行的嵌套 `<table>` 只依赖了 HTML 旧属性 `cellspacing="0"`，现代浏览器已不再完全遵守该属性。修复办法是在该表上加 CSS `border-collapse:collapse; border-spacing:0;`、并在两个 `<td>` 上显式 `padding:0;`。作者署名现在与上方品牌名、标题严格左对齐
 
 ## [0.3.0] - 2026-05-13
 
@@ -444,14 +571,14 @@ If you had `light-research` installed via this plugin marketplace at v0.5.0, upg
 - `topic-brief` 核心能力：
   - 4 问参数收集（主题 / 时间 / 信息源偏好 / 作者署名），带智能默认
   - 并行素材采集（≥4 次搜索 + 1-2 次焦点报告深读）
-  - 作者署名三态渲染（默认 "developed by Gen" / 显式留白 / 自定义文本）
+  - 作者署名三态渲染（旧版内置默认 / 显式留白 / 自定义文本；内置署名已在 2.0.0 移除）
   - self-contained Python 渲染管道（Jinja2 模板 + 中文引号自动修复）；唯一外部依赖 `jinja2`
   - `reference/` 下 4 份历史样本（3 份区域 + 1 份红色品牌示例）锚定语气与结构
   - 撰写后自检 checklist（issue_title ≤24 字 / 4 个子板块 × 3-4 条 / 数字可溯源 / URL 完整 等）
 - `topic-brief` 双语源文件：
   - `SKILL.md`（英文权威版，被 LLM 加载）
   - `SKILL.zh.md`（中文参考版，与英文同步；打包时排除）
-- `topic-brief` 范围排除（政治 / 军事 / 宗教 / 八卦 / 天然争议议题）—— 回 `Out of scope. (超出能力范围)` 一行就停，与 `verifying` 风格一致
+- `topic-brief` 主题过滤（政治 / 军事 / 宗教 / 八卦 / 天然争议议题）—— 一行即停，与 `verifying` 风格一致。**已在 2.0.0 移除**；这些主题改走多源并列规则。
 - `topic-brief` 工具调用映射 section —— 用通用语义动词（搜索引擎检索 / 抓取网页正文 / 用户提问入口），方便非 Claude 终端适配
 
 ### 变更
@@ -482,7 +609,7 @@ If you had `light-research` installed via this plugin marketplace at v0.5.0, upg
   - 否定性陈述（不可证伪 / 找反例）
   - 多源冲突（并列输出 + 差异归因）
 - `verifying` 核心规则：
-  - 范围排除：政治 / 军事 / 宗教 / 娱乐明星八卦 / 其他争议议题入口拒绝——skill 直接回复「超出能力范围」并停止
+  - 主题过滤：政治 / 军事 / 宗教 / 娱乐明星八卦 / 其他争议议题曾在入口一行停止。**已在 2.0.0 移除。**
   - 白名单一手来源（官方机构 + 权威行业源 + 聚合数据库 Statista / Wind / CEIC / SWFI / Refinitiv）
   - 三层搜索深度 + 下载原文通读
   - 图表「图意」核实（坐标轴 / 单位 / 起始年份 / 是否对数）

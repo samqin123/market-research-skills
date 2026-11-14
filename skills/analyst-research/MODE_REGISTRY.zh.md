@@ -12,7 +12,7 @@
 | **篇幅** | 4-5 页（< 4 视为过薄，需补充） | 12-15 页（< 12 偏薄） | 30-40 页 / 1.5 万字+ |
 | **图表数** | 0 | 6-10 | 25-35+ |
 | **时间预算** | 约 15 分钟 | 约 1 小时 | 约 2-3 小时 |
-| **LLM** | 单（Claude solo） | 单（Claude solo） | 单或多 LLM（可选 Claude + GPT critique） |
+| **模型路由** | 单 magpie 路由（免费优先） | 单 magpie 路由（免费优先） | 单或经 magpie 多模型（可选额外终审） |
 | **工作流步数** | 6 | 8 | 11 |
 | **硬停** | 0（仅软停） | 1（draft 后 sign-off） | 3（outline / draft / final） |
 | **引用方式** | Markdown 脚注（`^[机构, 标题, 日期. URL.]`） | Markdown 脚注（heavy 排期则可 .bib） | BibTeX（`references.bib`）+ APA via Quarto |
@@ -22,7 +22,7 @@
 | **HTML publication 派生** | ❌ | ❌ | ✅ |
 | **脚手架深度** | 最小（4 文件） | 中（`5_scripts/_path.py` + 编号目录） | 完整 10 编号目录 + 本地 skill 副本 |
 | **图模板** | n/a（无图） | 共用 `chart_template.py` | 共用 `chart_template.py` |
-| **onboarding 问题数** | 2（hypothesis + 报告语言） | 3-5（hypothesis + 受众 + 可选硬停 + 调色板 + 报告语言） | 4（报告语言 + 多 LLM + Quarto 复用 + 话题） |
+| **onboarding 问题数** | 3（hypothesis + 报告语言 + 模板/成本卡） | 4-5（hypothesis + 受众 + 可选硬停 + 调色板 + 报告语言 + 模板/成本卡） | 5（报告语言 + magpie 多模型 + Quarto 复用 + 话题 + 模板/成本卡） |
 
 ## 各 mode 文件依赖
 

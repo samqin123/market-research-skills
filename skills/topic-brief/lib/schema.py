@@ -90,7 +90,7 @@ class Briefing:
     period_label: str
     subject_name: str = ""
     brand_name: str = "TOPIC BRIEF"
-    author: str = "developed by Gen"                       # 封面左下角作者/团队信息。显式 "" 表示不显示
+    author: str = ""                                       # 封面左下角作者/团队信息。默认空；显式 "" 表示不显示
     summary: Summary = field(default_factory=lambda: Summary(""))
     focus: Focus = field(default_factory=lambda: Focus(""))
     sections: List[Section] = field(default_factory=list)

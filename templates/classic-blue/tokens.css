@@ -1,0 +1,21 @@
+/* classic-blue · upstream TOPIC BRIEF blue, preserved as an optional template.
+   Gene: Swiss grid (main) + Neoclassical gold hairline (auxiliary).
+   Use for: institutional / market briefs that need the original upstream look. */
+:root {
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --panel: #f0f5fa;
+  --ink: #2b3a4a;
+  --ink-muted: #8896a6;
+  --brand: #1e3a5f;
+  --brand-ink: #ffffff;
+  --accent: #4a90c2;
+  --rule: #d0d8e0;
+  --line: #e8edf3;
+  --gold: #d4a259;
+  --font-body: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-display: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --radius: 0px;
+  --leading: 1.85;
+  --page-width: 720px;
+}

@@ -40,12 +40,19 @@ pack_one() {
 
   # Pack from the skills/ directory so the zip's internal path starts at <skill-name>/.
   # Exclude SKILL.zh.md (Chinese reference only) — only ship the canonical English SKILL.md.
+  # Also exclude machine-local secrets (.env) and logs: a packaged skill must never leak a token.
   # 从 skills/ 目录打包，让 zip 内层级从 <skill-name>/ 开始；
-  # 排除 SKILL.zh.md（仅中文参考版），只发布权威的英文 SKILL.md。
+  # 排除 SKILL.zh.md（仅中文参考版），只发布权威的英文 SKILL.md；
+  # 同时排除本机 .env 与日志——打包产物绝不携带 token。
   (cd "$SKILLS_DIR" && zip -rq "$out" "$name" \
     -x "*.DS_Store" \
     -x "$name/downloads/*" \
     -x "$name/output/*" \
+    -x "$name/logs/*" \
+    -x "*/logs/*" \
+    -x "$name/scripts/.env" \
+    -x "*/.env" \
+    -x "*.log" \
     -x "$name/SKILL.zh.md")
 
   echo "Generated / 已生成: ${out#$REPO_ROOT/}"

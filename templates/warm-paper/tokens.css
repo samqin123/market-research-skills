@@ -1,0 +1,22 @@
+/* warm-paper · optional template for humanities / history / long-form essays.
+   Gene: Neoclassicism (main, mood 04: serif + symmetry + muted earth)
+       + Chinese-painting paper / negative space (auxiliary, code-gene 03).
+   Brass is a hairline only; no gold flood, no ornamental cards. */
+:root {
+  --bg: #e9dcc6;          /* warm page ground */
+  --surface: #faf3e6;     /* warm paper body */
+  --panel: #f3e8d7;
+  --ink: #3a332c;         /* ink, not pure black */
+  --ink-muted: #8a7d6d;
+  --brand: #3b2f27;
+  --brand-ink: #f8f0df;
+  --accent: #8c4a32;      /* terracotta / seal-red, one point */
+  --rule: #d8cbb4;
+  --line: #e4d8c5;
+  --brass: #b08a5a;       /* lines only */
+  --font-body: 'Noto Serif SC', 'Songti SC', 'Times New Roman', serif;
+  --font-display: 'Noto Serif SC', 'Songti SC', 'Times New Roman', serif;
+  --radius: 0px;
+  --leading: 2.05;
+  --page-width: 720px;
+}

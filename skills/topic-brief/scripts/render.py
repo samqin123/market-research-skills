@@ -3,10 +3,11 @@
 把一个 seed JSON 渲染成 HTML。
 
 用法：
-  python3 scripts/render.py <seed.json> [--out <output_dir>] [--open]
+  python3 scripts/render.py <seed.json> [--out <output_dir>] [--template light-green] [--open]
 
 例：
   python3 scripts/render.py reference/region_middle_east.example.json --out output --open
+  python3 scripts/render.py seed.json --template warm-paper --out output
 """
 from __future__ import annotations
 import argparse
@@ -19,7 +20,7 @@ SKILL_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(SKILL_ROOT))
 
 from lib.writer import write_briefing_mock
-from lib.renderer import save_briefing
+from lib.renderer import save_briefing, DEFAULT_TEMPLATE
 from lib.fix_quotes import fix_file
 
 
@@ -27,6 +28,11 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument("seed", help="种子 JSON 路径")
     p.add_argument("--out", default="output", help="输出目录（默认 output/）")
+    p.add_argument("--template", default=DEFAULT_TEMPLATE,
+                   choices=("light-green", "classic-blue", "warm-paper"),
+                   help="共享模板名（默认 light-green）")
+    p.add_argument("--cost-line", default=None,
+                   help="追加到 HTML 尾部的实际消耗行（HTML 注释内容）")
     p.add_argument("--open", action="store_true", help="生成后自动在浏览器打开")
     p.add_argument("--skip-fix-quotes", action="store_true",
                    help="跳过自动修引号步骤")
@@ -45,8 +51,10 @@ def main():
 
     seed = json.loads(seed_path.read_text(encoding="utf-8"))
     briefing = write_briefing_mock(seed)
-    out_path = save_briefing(briefing, args.out)
-    print(f"OK: {out_path}")
+    out_path = save_briefing(
+        briefing, args.out, template=args.template, cost_line=args.cost_line
+    )
+    print(f"OK: {out_path} (template={args.template})")
 
     if args.open:
         import subprocess

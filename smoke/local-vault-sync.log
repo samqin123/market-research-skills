@@ -1,0 +1,16 @@
+# local-vault smoke log (excerpt)
+
+[2026-11-14 02:49:23] === COST ESTIMATE / 预估卡 ===
+[2026-11-14 02:49:23] Mode / 模式:            local-vault · 1 file(s) · gate L1
+[2026-11-14 02:49:23] Channels / 通道:        free group/free-first — ¥0
+[2026-11-14 02:49:23] Cloud upload / 云端:    none
+[2026-11-14 02:49:23]   → single file: proceeding; any cloud step still needs its own L3 confirmation.
+[2026-11-14 02:49:23] === PDF 本地转换尝试 1 个 ===
+[2026-11-14 02:49:24]   → converting semiconductor_note.pdf (1 pages, 0.0 MB) via pymupdf4llm...
+[2026-11-14 02:49:24]   ✓ semiconductor_note.pdf (pymupdf4llm, 1 pages, 0.3s)
+[2026-11-14 02:49:33]     magpie usage: in=533 out=1321 model=deepseek-v4.1-flash
+[2026-11-14 02:49:33]   ✨ enriched semiconductor_note.md
+[2026-11-14 02:49:33]   pymupdf4llm 直出: 1
+[2026-11-14 02:49:33]   MinerU 处理: 0
+[2026-11-14 02:49:33]   Success: 1
+[2026-11-14 02:49:33]   Failed: 0

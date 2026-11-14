@@ -2,7 +2,7 @@
 
 > 中文版本见本文件下半部分 / Chinese version below
 
-A skill that generates a thematic observation briefing from public news sources. Outputs a single self-contained HTML file with blue "TOPIC BRIEF" branding — ready to paste directly into the **WeChat Official Account editor** (微信公众号).
+A skill that generates a thematic observation briefing from public news sources. Outputs a single self-contained HTML file, styled by a shared template (`light-green` default / `classic-blue` / `warm-paper`) — ready to paste directly into the **WeChat Official Account editor** (微信公众号). The default byline is blank.
 
 ---
 
@@ -20,7 +20,8 @@ topic-brief/
 │   ├── writer.py            ← write_briefing_mock (JSON → Briefing object)
 │   └── fix_quotes.py        ← Chinese-quote pairing repair
 ├── templates/
-│   └── briefing.html        ← Blue inline-CSS template (WeChat-compatible)
+│   └── briefing.html        ← fallback inline-CSS template (upstream blue; WeChat-compatible)
+└── (repo-root templates/ hold the shared classic-blue / light-green / warm-paper layouts)
 ├── scripts/
 │   └── render.py            ← CLI entry
 ├── prompts/
@@ -60,7 +61,7 @@ Generate a semiconductor industry briefing for the past month
 ```
 
 Claude follows the 5-step workflow in [SKILL.md](SKILL.md):
-1. Collect parameters (subject / period / source preference / author)
+1. Collect parameters (subject / period / source preference / template / author)
 2. Parallel material gathering (search + fetch)
 3. **Direction confirmation** ← key error-prevention gate
 4. Compose the seed JSON
@@ -93,13 +94,13 @@ A single HTML file containing:
 
 | What | Where |
 |---|---|
-| Visual style (colors, fonts, spacing) | inline styles in [templates/briefing.html](templates/briefing.html) |
+| Visual style (colors, fonts, spacing) | shared `templates/<name>/tokens.css` + `briefing.html`; skill fallback [templates/briefing.html](templates/briefing.html) |
 | Brand name (default `TOPIC BRIEF`) | `brand_name` in seed JSON |
 | Sub-section axis (country / theme / time / actor) | `sections[].label` in seed JSON |
 | Writing discipline, length caps | [prompts/system.md](prompts/system.md) |
 | Workflow (steps, failure handling) | [SKILL.md](SKILL.md) |
 
-For a red-brand version (e.g., a "Belt and Road" look), swap the color tokens `#1e3a5f`, `#d4a259`, `#f0f5fa`, `#c8d4e0` in `templates/briefing.html`. See `reference/brand_red_belt_and_road.example.json`.
+The upstream blue look is preserved as the optional `classic-blue` template; `light-green` is the default reading template. To make a red-brand variant, copy a shared template and change the `tokens.css` values. See `reference/brand_red_belt_and_road.example.json`.
 
 ## Research discipline
 
@@ -140,7 +141,8 @@ topic-brief/
 │   ├── writer.py            ← write_briefing_mock（JSON → Briefing 对象）
 │   └── fix_quotes.py        ← JSON 中文引号修复工具
 ├── templates/
-│   └── briefing.html        ← 蓝色 inline-CSS 模板（公众号兼容）
+│   └── briefing.html        ← 兜底 inline-CSS 模板（上游蓝；公众号兼容）
+└── （仓根 templates/ 放共享 classic-blue / light-green / warm-paper 版式）
 ├── scripts/
 │   └── render.py            ← CLI 入口
 ├── prompts/
@@ -201,7 +203,7 @@ python3 scripts/render.py reference/region_middle_east.example.json --out output
 ## 输出形态
 
 **单一 HTML 文件**：
-- 蓝色品牌（主色 `#1e3a5f`，辅金 `#d4a259`）
+- 模板化品牌：默认 `light-green`（浅绿底 / 深绿标题 / 米白正文），可选 `classic-blue`（上游蓝）与 `warm-paper`（暖纸衬线）；默认署名为空
 - 封面（品牌名 + 主题名 + 主标题 + 期号 + 作者署名）
 - 本期要点（焦点摘要 + 4 条速览）
 - 焦点观察长文（1500-2500 字，3-5 sections）
@@ -215,13 +217,13 @@ python3 scripts/render.py reference/region_middle_east.example.json --out output
 
 | 改什么 | 改哪 |
 |---|---|
-| 视觉样式（颜色、字号、间距） | [templates/briefing.html](templates/briefing.html) 里的 inline style |
+| 视觉样式（颜色、字号、间距） | 共享 `templates/<name>/tokens.css` + `briefing.html`；skill 内 [templates/briefing.html](templates/briefing.html) 为兜底 |
 | 品牌名（默认 `TOPIC BRIEF`） | seed JSON 里 `brand_name` 字段 |
 | 4 子板块如何分（按国家 / 按主题 / 按时间 / 按主体） | seed JSON 里 `sections[].label` 自由命名 |
 | 撰写纪律、字数限制 | [prompts/system.md](prompts/system.md) |
 | 工作流（步骤、失败处理） | [SKILL.md](SKILL.md) |
 
-如果要做红色品牌（比如复刻中金一带一路那种），把 `templates/briefing.html` 里的 `#1e3a5f`、`#d4a259`、`#f0f5fa`、`#c8d4e0` 这几个色值改成对应红色调即可。参考 `reference/brand_red_belt_and_road.example.json`。
+上游蓝色已保留为可选 `classic-blue` 模板；默认是 `light-green`。要做红色品牌，复制一套共享模板改 `tokens.css` 即可。参考 `reference/brand_red_belt_and_road.example.json`。
 
 ## 投研纪律提醒
 

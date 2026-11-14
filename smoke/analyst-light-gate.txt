@@ -1,0 +1,17 @@
+# analyst-research light — cost gate + magpie free call
+
+$ MAGPIE_BASE_URL=http://127.0.0.1:3425/v1 MAGPIE_MODEL_MAIN=group/free-first python3 scripts/estimate.py --mode light --sources 25
+[L1] light · free (group/free-first) · tokens ≈ 30k–35k in · 7k–11k out · 15–25 min · ¥0 · template: light-green · proceed? (one word)
+
+GATE: awaiting confirmation — no work starts yet (exit 10).
+exit=10
+
+$ ... --confirmed
+[L1] light · free (group/free-first) · tokens ≈ 30k–35k in · 7k–11k out · 15–25 min · ¥0 · template: light-green · proceed? (one word)
+
+GATE: confirmed — proceed.
+exit=0
+
+$ MAGPIE_MODEL_FAST=group/free-first MagpieClient().chat("Reply with exactly: ANALYST_MAGPIE_OK")
+ANALYST_MAGPIE_OK
+exit=0

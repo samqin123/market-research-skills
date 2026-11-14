@@ -8,7 +8,7 @@
 |---|---|---|---|
 | `light` | `workflow_light.md` | 6 | 仅软停。无图。纯 markdown 脚注引用。 |
 | `medium` | `workflow_medium.md` | 8 | 一个硬停（draft 后 sign-off）。6-10 图。脚注引用。 |
-| `heavy` | `workflow_heavy.md` | 11 | 三个硬停（outline / draft / final）。25-35+ 图。BibTeX + APA。可选多 LLM。 |
+| `heavy` | `workflow_heavy.md` | 11 | 三个硬停（outline / draft / final）。25-35+ 图。BibTeX + APA。可选magpie 多模型。 |
 
 每个 mode 的工作流文件都是**自包含**的，含：
 

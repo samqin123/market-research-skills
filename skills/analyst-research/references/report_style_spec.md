@@ -22,12 +22,22 @@
 | File | Location | Role |
 |---|---|---|
 | `SKILL.md` | `analyst-research/` | skill entry (frontmatter + load order) |
-| `workflow_heavy.md` | `analyst-research/references/` | process discipline: 11-step skeleton, multi-LLM division, retrospective format |
+| `workflow_heavy.md` | `analyst-research/references/` | process discipline: 11-step skeleton, magpie multi-model division, retrospective format |
 | `report_style_spec.md` | `analyst-research/references/` | visual spec (this doc) + chart_template interface contract |
 | `chart_template.py` | `analyst-research/scripts/` | drawing implementation single source of truth: `PALETTE`, `setup_style`, `save_fig`, `legend_above` |
 | `publication-style-template.html` | `analyst-research/scripts/` | publication HTML template (optional 10c derivation) |
-| `author.jpg` | `analyst-research/scripts/` | author headshot placeholder (optional 10c derivation) |
+| `author.jpg` | `analyst-research/scripts/` | author headshot placeholder (optional 10c derivation); blank byline is the default |
+| `templates/<name>/` | repo root | shared output template: `tokens.css` + `analyst.css` + `analyst.html`; default `light-green` |
 | `_path.py` | `5_scripts/` | sys.path injection to `../analyst-research/scripts/`. Must be created first at the new-project scaffold stage (content at §6.4 end) |
+
+### Template selection (before charting)
+
+Pick the template on the same screen as the cost estimate card: `light-green` (default) /
+`classic-blue` / `warm-paper`. The palette and font temperament come from
+`templates/<name>/tokens.css`; HTML / Quarto derivations also load
+`templates/<name>/analyst.css`. The chart palette below remains the fallback when no template is
+selected. `light-green` uses a deep-green title / off-white body / low-contrast ink; `warm-paper`
+uses warm paper + serif; `classic-blue` preserves the upstream palette.
 
 ### Hard rules for drawing scripts
 
@@ -879,14 +889,14 @@ The publication-style HTML template provides its own `.exhibit-title` / `.exhibi
 
 - **cover**: full-bleed gradient / photo bg + large title + subtitle + date; accent bar at the bottom-right, recommended above an "independent research report" corner-mark
 - **chapter title page**: the banner holds the chapter Chinese label (e.g. "第一章" 42pt) + English small-caps ("CHAPTER ONE" 9pt). Do not repeat the chapter number in the body, the banner already carries the identifier
-- **author headshot**: place a local `Gen.jpg` (or author name), embed with CSS `<img>` `.author-headshot { border-radius: 50% }` circular crop. Compress under 1MB (recommended long edge ≤ 1200px)
+- **author headshot**: place a local `author.jpg` (or author name), embed with CSS `<img>` `.author-headshot { border-radius: 50% }` circular crop. Compress under 1MB (recommended long edge ≤ 1200px)
 - **headshot composition trap**: with a 1:1 container and a 1:1 image, CSS `object-fit` has no croppable space. If the original's high forehead is cut by the circle, use PIL to add white space at the top to push the face down:
   ```python
   from PIL import Image
-  im = Image.open('Gen.jpg')
+  im = Image.open('author.jpg')
   new = Image.new('RGB', (im.width, im.height + 140), 'white')
   new.paste(im, (0, 140))
-  new.save('Gen.jpg', 'JPEG', quality=85)
+  new.save('author.jpg', 'JPEG', quality=85)
   ```
 
 ### 7.6 HTML → PDF conversion
@@ -958,7 +968,7 @@ English version (for EN PDFs):
 
 ```markdown
 ::: {.callout-note appearance="minimal" icon=false}
-**About this report.** This report was produced using the [analyst-research](https://github.com/genli-ai/market-research-skills) workflow, an open-source Claude skill that codifies investment-research methodology (source provenance, three-state labelling, multi-source caliper analysis). Every numerical claim traces to a primary source listed in the bibliography; verifying records are preserved in the project's `_process/` folder. The analysis, judgement, and final sign-off are the author's; AI handled source aggregation, drafting, and citation formatting under explicit human checkpoints.
+**About this report.** This report was produced using the [analyst-research](https://github.com/genli-ai/market-research-skills) workflow, an open-source the magpie-routed AI skill that codifies investment-research methodology (source provenance, three-state labelling, multi-source caliper analysis). Every numerical claim traces to a primary source listed in the bibliography; verifying records are preserved in the project's `_process/` folder. The analysis, judgement, and final sign-off are the author's; AI handled source aggregation, drafting, and citation formatting under explicit human checkpoints.
 :::
 ```
 
@@ -966,7 +976,7 @@ Chinese version (for zh PDFs):
 
 ```markdown
 ::: {.callout-note appearance="minimal" icon=false}
-**关于本报告**：本报告使用 [analyst-research](https://github.com/genli-ai/market-research-skills) 工作流生成。该工作流是一个开源 Claude skill，封装了投研方法论（来源可追溯、三态标注、多源口径辨析）。所有数字均可追溯至参考文献列出的一手来源，verifying 记录保存在项目 `_process/` 目录。分析判断与最终签字由作者负责；AI 在显式人工检查点下承担素材汇总、初稿撰写、引用格式化工作。
+**关于本报告**：本报告使用 [analyst-research](https://github.com/genli-ai/market-research-skills) 工作流生成。该工作流是一个开源 the magpie-routed AI skill，封装了投研方法论（来源可追溯、三态标注、多源口径辨析）。所有数字均可追溯至参考文献列出的一手来源，verifying 记录保存在项目 `_process/` 目录。分析判断与最终签字由作者负责；AI 在显式人工检查点下承担素材汇总、初稿撰写、引用格式化工作。
 :::
 ```
 

@@ -1,0 +1,14 @@
+# Acceptance 7 (added) — .env is not tracked
+
+$ git ls-files --error-unmatch skills/local-vault/scripts/.env
+error: pathspec 'skills/local-vault/scripts/.env' did not match any file(s) known to git
+Did you forget to 'git add'?
+exit=1
+
+$ git check-ignore -v skills/local-vault/scripts/.env
+.gitignore:7:**/.env	skills/local-vault/scripts/.env
+
+$ stat -c "%a %s" skills/local-vault/scripts/.env
+600 65
+
+Value never read or printed; file preserved.

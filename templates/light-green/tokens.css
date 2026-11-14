@@ -1,0 +1,23 @@
+/* light-green · DEFAULT template.
+   Gene: Chinese-painting negative space / paper-silk (main, code-gene 03)
+       + Ghibli natural-green warmth (auxiliary, mood 02).
+   Use for: long reads, WeChat paste, reading comfort. No gradients, no cards,
+   no shadows, 0 radius; the green is a page ground, not a highlight. */
+:root {
+  --bg: #eef4ea;          /* light green page ground */
+  --surface: #fbfaf4;     /* rice-paper body area */
+  --panel: #f4f8f0;
+  --ink: #2f3a33;         /* low-contrast deep grey-green */
+  --ink-muted: #7d8a7a;
+  --brand: #1f4d3a;       /* deep green titles */
+  --brand-ink: #f7fbf4;
+  --accent: #6f8f5f;      /* moss accent, used sparingly */
+  --rule: #d7e0cf;
+  --line: #dfe8d9;
+  --highlight: #a9c39a;
+  --font-body: -apple-system, 'PingFang SC', 'Noto Sans SC', sans-serif;
+  --font-display: 'Songti SC', 'Noto Serif SC', serif;
+  --radius: 0px;
+  --leading: 2.0;
+  --page-width: 720px;
+}

@@ -23,12 +23,20 @@
 | 文件 | 位置 | 角色 |
 |---|---|---|
 | `SKILL.md` | `analyst-research/` | skill 入口（frontmatter + 加载顺序） |
-| `workflow.md` | `analyst-research/references/` | 过程纪律：十一步骨架、多 LLM 分工、复盘格式 |
+| `workflow.md` | `analyst-research/references/` | 过程纪律：十一步骨架、magpie 多模型 分工、复盘格式 |
 | `report_style_spec.md` | `analyst-research/references/` | 视觉规范（本文档）+ chart_template 接口契约 |
 | `chart_template.py` | `analyst-research/scripts/` | 绘图实现 single source of truth：`PALETTE`、`setup_style`、`save_fig`、`legend_above` |
 | `publication-style-template.html` | `analyst-research/scripts/` | publication HTML 模板（10c 可选派生用） |
-| `author.jpg` | `analyst-research/scripts/` | 作者头像 placeholder（10c 可选派生用） |
+| `author.jpg` | `analyst-research/scripts/` | 作者头像 placeholder（10c 可选派生用）；默认署名为空 |
+| `templates/<name>/` | 仓根 | 共享输出模板：`tokens.css` + `analyst.css` + `analyst.html`；默认 `light-green` |
 | `_path.py` | `5_scripts/` | 4 行 sys.path 注入到 `../analyst-research/scripts/`。新项目脚手架阶段必须先建（内容见 §6.4 末尾） |
+
+### 模板选择（画图前）
+
+与成本预估卡同屏选模板：`light-green`（默认）/ `classic-blue` / `warm-paper`。色板与字体气质取自
+`templates/<name>/tokens.css`；HTML / Quarto 派生另加载 `templates/<name>/analyst.css`。未选模板时下方
+图表色板仍是兜底。`light-green` 用深绿标题 / 米白正文 / 低对比墨色；`warm-paper` 用暖纸 + 衬线；
+`classic-blue` 保留上游色板。
 
 ### 绘图脚本硬规则
 
@@ -877,14 +885,14 @@ publication-style HTML 模板自己提供 `.exhibit-title` / `.exhibit-source` �
 
 - **封面**：full-bleed gradient / photo bg + 标题大字 + 副标题 + 日期；accent bar 右下角，建议放在「独立研究报告」类 corner-mark 上方
 - **章节扉页**：banner 区放章中文 label（如「第一章」42pt）+ 英文 small-caps（「CHAPTER ONE」9pt）。不要在正文 body 里重复出现章号，banner 已经承担识别
-- **作者头像**：本地放一张 `Gen.jpg`（或 author name），CSS `<img>` 嵌入 `.author-headshot { border-radius: 50% }` 圆形剪裁。压到 1MB 以内（建议长边 ≤ 1200px）
+- **作者头像**：本地放一张 `author.jpg`（或 author name），CSS `<img>` 嵌入 `.author-headshot { border-radius: 50% }` 圆形剪裁。压到 1MB 以内（建议长边 ≤ 1200px）
 - **头像构图陷阱**：1:1 容器配 1:1 图时 CSS `object-fit` 无可裁剪空间。如果原图额头偏高被圆形剪掉，用 PIL 在图顶部加白边把脸下推：
   ```python
   from PIL import Image
-  im = Image.open('Gen.jpg')
+  im = Image.open('author.jpg')
   new = Image.new('RGB', (im.width, im.height + 140), 'white')
   new.paste(im, (0, 140))
-  new.save('Gen.jpg', 'JPEG', quality=85)
+  new.save('author.jpg', 'JPEG', quality=85)
   ```
 
 ### 7.6 HTML → PDF 转换
@@ -956,7 +964,7 @@ publication-style PDF 渲完后，公众号长稿渠道可把 PDF 切成逐页 J
 
 ```markdown
 ::: {.callout-note appearance="minimal" icon=false}
-**About this report.** This report was produced using the [analyst-research](https://github.com/genli-ai/market-research-skills) workflow, an open-source Claude skill that codifies investment-research methodology (source provenance, three-state labelling, multi-source caliper analysis). Every numerical claim traces to a primary source listed in the bibliography; verifying records are preserved in the project's `_process/` folder. The analysis, judgement, and final sign-off are the author's; AI handled source aggregation, drafting, and citation formatting under explicit human checkpoints.
+**About this report.** This report was produced using the [analyst-research](https://github.com/genli-ai/market-research-skills) workflow, an open-source magpie 路由 AI skill that codifies investment-research methodology (source provenance, three-state labelling, multi-source caliper analysis). Every numerical claim traces to a primary source listed in the bibliography; verifying records are preserved in the project's `_process/` folder. The analysis, judgement, and final sign-off are the author's; AI handled source aggregation, drafting, and citation formatting under explicit human checkpoints.
 :::
 ```
 
@@ -964,7 +972,7 @@ publication-style PDF 渲完后，公众号长稿渠道可把 PDF 切成逐页 J
 
 ```markdown
 ::: {.callout-note appearance="minimal" icon=false}
-**关于本报告**：本报告使用 [analyst-research](https://github.com/genli-ai/market-research-skills) 工作流生成。该工作流是一个开源 Claude skill，封装了投研方法论（来源可追溯、三态标注、多源口径辨析）。所有数字均可追溯至参考文献列出的一手来源，verifying 记录保存在项目 `_process/` 目录。分析判断与最终签字由作者负责；AI 在显式人工检查点下承担素材汇总、初稿撰写、引用格式化工作。
+**关于本报告**：本报告使用 [analyst-research](https://github.com/genli-ai/market-research-skills) 工作流生成。该工作流是一个开源 magpie 路由 AI skill，封装了投研方法论（来源可追溯、三态标注、多源口径辨析）。所有数字均可追溯至参考文献列出的一手来源，verifying 记录保存在项目 `_process/` 目录。分析判断与最终签字由作者负责；AI 在显式人工检查点下承担素材汇总、初稿撰写、引用格式化工作。
 :::
 ```
 

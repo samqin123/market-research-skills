@@ -1,0 +1,7 @@
+# Acceptance 1 — repo-wide grep (self-output excluded)
+
+$ grep -rniE "out[ ]of[ ]scope|超出[能]力范围|developed[ ]by[ ]gen|小胰[宝]" --exclude-dir=.git --exclude-dir=.venv --exclude-dir=releases --exclude=acceptance-grep.txt .
+NO MATCHES
+
+$ grep -rniE "scope[ -]exclusion|r[e]fused[ ]topic|r[e]fused[ ]category|拒[查]|拒[绝]主题|范围[排]除" --exclude-dir=.git --exclude-dir=.venv --exclude-dir=releases --exclude=acceptance-grep.txt .
+NO MATCHES

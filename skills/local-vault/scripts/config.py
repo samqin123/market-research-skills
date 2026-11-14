@@ -34,6 +34,23 @@ LOG_DIR = _env_path("KB_LOG_DIR") or (TOOL_DIR / "logs")
 
 MINERU_TOKEN = os.getenv("MINERU_TOKEN", "")
 
+# ── magpie 网关（所有脚本内 LLM 调用统一走这里；地址/模型名全部来自 .env）──
+# 绝不硬编码 key，绝不打印 key。.env.example 给出全部键名与示例值。
+MAGPIE_BASE_URL = os.getenv("MAGPIE_BASE_URL", "").rstrip("/")
+MAGPIE_API_KEY = os.getenv("MAGPIE_API_KEY", "")
+MAGPIE_MODEL_FAST = os.getenv("MAGPIE_MODEL_FAST", "")
+MAGPIE_MODEL_MAIN = os.getenv("MAGPIE_MODEL_MAIN", "")
+MAGPIE_MODEL_VISION = os.getenv("MAGPIE_MODEL_VISION", "")
+MAGPIE_TIMEOUT_SEC = int(os.getenv("MAGPIE_TIMEOUT_SEC", "90") or "90")
+MAGPIE_MAX_RETRIES = int(os.getenv("MAGPIE_MAX_RETRIES", "1") or "1")
+
+# 成本政策（预估卡/守卫读同一组变量；默认值见 .env.example）
+ALLOW_PAID = os.getenv("ALLOW_PAID", "0").strip().lower() in {"1", "true", "yes", "on"}
+COST_MAX_PER_RUN_CNY = float(os.getenv("COST_MAX_PER_RUN_CNY", "20") or "20")
+COST_MAX_MONTH_CNY = float(os.getenv("COST_MAX_MONTH_CNY", "200") or "200")
+# 云端 MinerU 属三级闸口：非交互时必须显式确认（--confirm-mineru 或 MINERU_CONFIRM=1）
+MINERU_CONFIRM = os.getenv("MINERU_CONFIRM", "").strip().lower() in {"1", "true", "yes", "on"}
+
 # 是否在原始文件目录放一个可双击的 sync.command（仅 macOS）。
 # 默认开；在 .env 里设 KB_NO_LAUNCHER=1 关掉（不想让脚本往数据目录写入口文件时用）。
 INSTALL_CLICKABLE_LAUNCHER = (
@@ -122,16 +139,16 @@ PANDOC_TIMEOUT_SEC = 120
 # CSV/TSV 转表格的行数上限；超过截断 + 提示。
 CSV_MAX_ROWS = 1000
 
-# PPT 图片 OCR：用 claude -p 的 Read 工具把图片里的文字转出来，紧跟图片引用插入正文。
+# PPT 图片 OCR：经 magpie 视觉通道把图片里的文字转出来，紧跟图片引用插入正文。
 # 失败/空 → 只保留图片引用，不阻塞（fail-soft）。测试默认关（见 conftest）。
-# 「智能 OCR」三件套避免每张装饰图都串行起 claude（慢的根因）：
+# 「智能 OCR」三件套避免每张装饰图都串行请求（慢的根因）：
 #   ① 跳过小于 OCR_MIN_IMAGE_BYTES 的图（logo/图标/装饰，OCR 无价值）
 #   ② 同一张图（blob 内容相同）只抽取 + OCR 一次，跨页复用结果
 #   ③ 唯一内容图用 OCR_MAX_WORKERS 个线程并发跑
 OCR_PPTX_IMAGES = True
-OCR_TIMEOUT_SEC = 90
+OCR_TIMEOUT_SEC = MAGPIE_TIMEOUT_SEC
 OCR_MIN_IMAGE_BYTES = 30000   # < 30KB 的图视为装饰，跳过 OCR（仍抽取+引用）
-OCR_MAX_WORKERS = 4           # 并发 claude -p 数；订阅有速率限制，别开太大
+OCR_MAX_WORKERS = 4           # 并发 magpie 请求数；免费通道有速率限制，别开太大
 
 # 音视频转写（本地 whisper）：纯本地、零 token/配额/API key。
 # 引擎按平台自动选（可被 env 覆盖）：
@@ -187,13 +204,13 @@ POLL_INTERVAL_SEC = 5
 POLL_TIMEOUT_SEC = 600
 POLL_HEARTBEAT_SEC = 30
 
-# Frontmatter 富化：每个产出 MD 调 claude -p 写 abstract / tags / synonyms
-# 设为 False 可关掉自动化（手动用 Claude Code 会话 enrich）
+# Frontmatter 富化：每个产出 MD 经 magpie 免费通道写 abstract / tags / synonyms
+# 设为 False 可关掉自动化（手动用 LLM 会话 enrich）
 ENRICH_FRONTMATTER = True
-ENRICH_CLAUDE_CMD = "claude"      # 调用的 CLI 名（必须在 PATH）
-ENRICH_TIMEOUT_SEC = 90           # 单次 enrich 调用超时
-ENRICH_SAMPLE_HEAD_CHARS = 5000   # 喂给 Claude 的 MD 开头字符数
-ENRICH_SAMPLE_TAIL_CHARS = 5000   # 喂给 Claude 的 MD 末尾字符数
+ENRICH_TIMEOUT_SEC = MAGPIE_TIMEOUT_SEC   # 单次 enrich 调用超时（来自 .env）
+ENRICH_SAMPLE_HEAD_CHARS = 5000   # 喂给 magpie 的 MD 开头字符数
+ENRICH_SAMPLE_TAIL_CHARS = 5000   # 喂给 magpie 的 MD 末尾字符数
+ENRICH_MAX_TOKENS = int(os.getenv("ENRICH_MAX_TOKENS", "4000") or "4000")
 
 SUPPORTED_EXTS = (
     {".pdf", ".doc", ".docx", ".ppt", ".pptx", ".xls", ".xlsx", ".html",

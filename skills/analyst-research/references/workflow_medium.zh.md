@@ -2,13 +2,17 @@
 
 > 英文主文件为 `workflow_medium.md`（中文镜像）。
 
-适用对象：12-15 页主题分析，6-10 张图，约 1 小时预算，单 LLM，1 硬停（step 7 用户 sign off 强制），可选第二硬停（step 2 广搜后，onboarding 时让用户决定）。
+适用对象：12-15 页主题分析，6-10 张图，约 1 小时预算，单 magpie 路由，1 硬停（step 7 用户 sign off 强制），可选第二硬停（step 2 广搜后，onboarding 时让用户决定）。
 
 light 与 heavy 是同 skill 内的姐妹模式，分别处理 5 页内决策备忘与 1.5 万字+ 长篇研报。三档模式共用 hypothesis-lock 起点，下游各模式自治。
 
 ---
 
 ## 一、新项目 onboarding 流程
+
+### 步骤 0a —— 成本闸口 + 模板（搭脚手架前必做）
+
+跑 `python3 ../../../scripts/estimate.py --mode medium --sources <n>`，出**二级**完整卡（模式、token 区间、时长、免费/付费通道、云端上传、预计费用、预算、模板）。`medium` 须明确 yes。付费通道默认关闭（`ALLOW_PAID=0`）；付费终审是独立三级确认。模板默认 `light-green`，同屏选。未确认前不搭脚手架、不写正文。
 
 ### 第 0 步：宣告
 
@@ -38,10 +42,10 @@ light 与 heavy 是同 skill 内的姐妹模式，分别处理 5 页内决策备
 - 产出形态：PDF（主） + Word docx（派生），**不出 HTML、不出公众号 JPG、不出 slide**
 - 篇幅：12-15 页目标（**< 12 页视为偏薄,回补内容或加图深度,不交差**；6-7 页强警告 + 建议转 light;16-20 页强警告 + 建议精简;20+ 页重新评估 medium / heavy)
 - 图表：6-10 张，**图表前置**（先做图再写正文，沿用 heavy step 7 纪律）
-- LLM：单 LLM only（Claude solo 全程），不调多 LLM critique
+- 模型路由：单 magpie 路由（免费优先全程），不调 magpie 多模型 critique
 - 摘要形态：default 用「三段式摘要」（结论 + 关键数字 + so-what）。用户要 BLUF 单段就明说
 - 时间预期：约 1 小时单 session 跑完
-- 作者署名 / 邮箱：从全局 `~/.claude/CLAUDE.md`「作者署名」段读 default，无此段才显式问
+- 作者署名 / 邮箱：**默认留空**；只有用户主动要署名时才问。绝不插入内置签名。
 
 ### 第 2 步：搭建脚手架
 
@@ -105,13 +109,13 @@ chart_template.FIGURES = FIGURES
 | 3 | outline draft（h1 + h2 + 图表清单） | 软停 | 20 min | heavy 6 精简 |
 | 4 | 数据 + 图表 6-10 张（一图一脚本、双双落盘、视觉自检 4 项） | 软停 | 60-90 min | **完整继承 heavy 7 纪律**，张数压缩 |
 | 5 | draft 一气连写 12-15 页 | 软停 | 45-60 min | heavy 8 default 路径 |
-| 6 | self-critique + verifying（单 LLM 内一气走，调 `market-research-skills:verifying`） | 软停 | 20 min | heavy 9b + 9c 合并精简 |
+| 6 | self-critique + verifying（单 magpie 路由 内一气走，调 `market-research-skills:verifying`） | 软停 | 20 min | heavy 9b + 9c 合并精简 |
 | 7 | 用户 sign off（用户通读 v1 PDF 提意见，反复迭代） | **硬停** | 看用户节奏 | heavy 9d |
 | 8 | 定稿 + Word 派生（quarto render + pandoc qmd→docx） | 软停 | 10 min | heavy 10 精简，砍 HTML / 公众号 |
 
 **全部 0 硬停 ≠ 0 自检门**。AI 各步落盘后简短告知用户阶段产出，**软停就自动推进**。step 7 是唯一强制硬停。step 2 是否硬停由用户在 onboarding Q3 决定。用户随时可叫停、调整方向、要求回退。
 
-砍掉的 heavy 步骤：3（AI 单独建议方向）/ 4（话题硬停）/ 5（补搜，融入 step 2）/ 9a（DS 润色）/ 9b 与 9c 拆分 / 10c (HTML 派生) / 10d (公众号派生) / 11（逐节复盘）。
+砍掉的 heavy 步骤：3（AI 单独建议方向）/ 4（话题硬停）/ 5（补搜，融入 step 2）/ 9a（另一模型 润色）/ 9b 与 9c 拆分 / 10c (HTML 派生) / 10d (公众号派生) / 11（逐节复盘）。
 
 ---
 
@@ -158,7 +162,7 @@ chart_template.FIGURES = FIGURES
 
 **目标**：定话题方向（数量优先，覆盖面优先）。规模压到 15 源左右（heavy 通常 30-50 源）。
 
-**操作**：Claude solo 走遍以下来源类别，配合 iFinD MCP 或 `financial-data-sources` skill 抓数据。Claude 综合到 `2_research/research.md`。
+**操作**：magpie 免费优先单路由 走遍以下来源类别，配合 iFinD MCP 或 `financial-data-sources` skill 抓数据。magpie 路由 AI 综合到 `2_research/research.md`。
 
 **关键纪律：来源覆盖（7 类至少 4 类必检）**
 
@@ -227,7 +231,7 @@ IMF eLibrary、BIS WP、ECB papers 等机构的直链 PDF 经常被 Cloudflare �
 
 **踩坑警示**：
 
-- 单家 LLM 的关键判断必须对照另一类来源（如 IMF 估算对照官方主权方披露）才能成结论，**单一来源孤证不立**
+- 单家 模型 的关键判断必须对照另一类来源（如 IMF 估算对照官方主权方披露）才能成结论，**单一来源孤证不立**
 - 「找不到」要谨慎下结论，可能是检索词不对，再换一两组关键词
 
 ---
@@ -247,7 +251,7 @@ IMF eLibrary、BIS WP、ECB papers 等机构的直链 PDF 经常被 Cloudflare �
    - 关键引用（具体到文献名 + 页码）
 4. **强制段落**：「不做什么」+「不确定性边界」（数据缺口、口径限制、商业信息风险等）
 
-**图表清单生成**：Claude 基于资料库给图表清单（每节建议哪些图能支撑论点），目标 **6-10 张**，**已按 step 4「加图判据 6 条」预筛**。
+**图表清单生成**：magpie 路由 AI 基于资料库给图表清单（每节建议哪些图能支撑论点），目标 **6-10 张**，**已按 step 4「加图判据 6 条」预筛**。
 
 **outline 与 step 4「加图 / 删图判据」的关联**：
 
@@ -368,20 +372,20 @@ step 3 outline 列的 N 张图清单已逐张过加图判据，**step 4 必须�
 
 **关键问题**：把图表与文献组织成研报语言。
 
-**主导**：Claude solo 全程（初稿 + 自润色 + 格式 / 渲染调优）。critique 留到 step 6。
+**主导**：magpie 免费优先单路由 全程（初稿 + 自润色 + 格式 / 渲染调优）。critique 留到 step 6。
 
-**写作纪律**：Claude 主笔时**严格按 §五 写作规范写**，目标是 step 5 终稿质量等同于经第三方文字润色。
+**写作纪律**：magpie 路由 AI 主笔时**严格按 §五 写作规范写**，目标是 step 5 终稿质量等同于经第三方文字润色。
 
-**default 一气连写整稿**：Claude 按 outline 顺序写完全部章节，整稿 v1 完成后**自动进 step 6 self-critique**。理由是 outline 已经过 step 3 + step 4 双向迭代 final，take-away 已锁定，节内反复停审节奏代价远超价值，致命错误由 step 6 self-critique 与 step 7 sign off 兜住。
+**default 一气连写整稿**：magpie 路由 AI 按 outline 顺序写完全部章节，整稿 v1 完成后**自动进 step 6 self-critique**。理由是 outline 已经过 step 3 + step 4 双向迭代 final，take-away 已锁定，节内反复停审节奏代价远超价值，致命错误由 step 6 self-critique 与 step 7 sign off 兜住。
 
 **fallback：节内硬停**（用户明确要求时启用）。每个 section 综合完成后停下来等用户审，下一节才写。适用场景：outline 未充分锁定、用户希望深度参与每节论证流校准。
 
 **operating 顺序**：
 
-1. Claude 按节写初稿（v1.0），**逐节自检 §五 写作纪律**（句号续接 / 列举冒号 / 嵌入 takeaway / ppts 改个百分点 / 书面化连接词 / 序号起头 / 不用技术符号代连词）。同时**对照 outline 合同逐节做深度检查**：每节都带上它计划的图，且不止 1-2 段一笔带过；比合同 takeaway 更薄的节回 step 2 / 4 补料，而不是用废话填充
+1. magpie 路由 AI 按节写初稿（v1.0），**逐节自检 §五 写作纪律**（句号续接 / 列举冒号 / 嵌入 takeaway / ppts 改个百分点 / 书面化连接词 / 序号起头 / 不用技术符号代连词）。同时**对照 outline 合同逐节做深度检查**：每节都带上它计划的图，且不止 1-2 段一笔带过；比合同 takeaway 更薄的节回 step 2 / 4 补料，而不是用废话填充
 2. 每节自检通过即立即写下一节（default 一气连写）
 3. 整稿 v1.0 完成后做渲染 / 字体 / YAML 调优（v1.1 → v1.x），正文不动
-4. step 5 终版 = Claude 纯版，**快照到 `7_draft/_process/draft_v1_claude.qmd`**（step 6 改文字前必须先落盘这一份，否则没有「纯 Claude 基线」可回溯）
+4. step 5 终版 = magpie 路由 AI 纯版，**快照到 `7_draft/_process/draft_v1_claude.qmd`**（step 6 改文字前必须先落盘这一份，否则没有「纯 magpie 路由 AI 基线」可回溯）
 5. 自动进 step 6
 
 **写作前自检清单**：每节 v1 完成立刻跑轻量子集（破折号、emoji、meta-language、抒情铺垫）+「图脚本-CSV-正文三方一致」自检；整稿 v1 完成后跑 §六 全量清单。
@@ -434,7 +438,7 @@ date: today
 
 **关键问题**：完整稿读起来站不站得住？所有 caveat 都核到位了吗？
 
-**主导**：Claude self-critique（单 LLM，不调外部 GPT critique）。
+**主导**：magpie 路由自评（单 magpie 路由，不调外部 第二模型 critique）。
 
 **子步串行**：
 
@@ -734,7 +738,7 @@ medium **不强制逐节复盘**（heavy 是逐节追加 + 项目收尾一次性
 | 篇幅 | 5 页 / 2500-3000 字 | **12-15 页** | 1.5 万字+ / 35+ 页 |
 | 图表 | 0 | **6-10 张** | 通常 15+ 张，常达 30+ |
 | 引用机制 | footnote 内联 | **footnote 内联** | references.bib |
-| LLM | 单 LLM only | **单 LLM only** | 单 / 多 LLM 可选 |
+| 模型路由 | 单 magpie 路由 | **单 magpie 路由** | 单 / magpie 多模型 可选 |
 | 硬停 | 0 | **1（step 7 sign off）+ 可选 1（step 2 广搜后）** | 2（step 4 / 9d） |
 | 派生形态 | PDF + Word | **PDF + Word** | PDF + Word + HTML + 公众号 |
 | 复盘 | 无 | **可选** | 必做（§11.2 audit） |
@@ -831,7 +835,7 @@ medium **不强制逐节复盘**（heavy 是逐节追加 + 项目收尾一次性
 - **产出形态**：PDF 主报告 + Word docx 派生（默认）
 - **目标读者**：<专家 / 双兼>
 - **工具栈**：Quarto + xelatex 渲染 PDF；Python 用户级安装（不建 venv）
-- **LLM 模式**：单 LLM（Claude solo），按 medium workflow §一 onboarding 锁定
+- **模型 模式**：单 magpie 路由（magpie 免费优先单路由），按 medium workflow §一 onboarding 锁定
 
 ## 写作与排版
 
@@ -933,4 +937,4 @@ medium **不强制逐节复盘**（heavy 是逐节追加 + 项目收尾一次性
 
 ### A.8 中英文并重原则
 
-国际机构、投行、学术英文为主，区域、政策、一手新闻中文常更准。medium 单 LLM 模式下 Claude 一家走遍 4-7 类，中文区域类用 iFinD MCP 与公众号 WebFetch 补足。
+国际机构、投行、学术英文为主，区域、政策、一手新闻中文常更准。medium 单 magpie 路由模式下 magpie 路由 AI 一家走遍 4-7 类，中文区域类用 iFinD MCP 与公众号 WebFetch 补足。

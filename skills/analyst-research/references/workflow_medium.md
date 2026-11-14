@@ -3,13 +3,17 @@
 > English is the authoritative version; the Chinese mirror is `workflow_medium.zh.md`.
 > Writing-standard examples that illustrate Chinese-prose redlines are kept in Chinese (they apply when the report language is Chinese); the surrounding rules are in English and apply to both languages unless noted.
 
-Scope: 12-15 page topic analysis, 6-10 charts, ~1 h budget, single LLM, 1 hard stop (step 7 user sign-off, mandatory), optional second hard stop (after the step 2 broad search, decided by the user at onboarding).
+Scope: 12-15 page topic analysis, 6-10 charts, ~1 h budget, single magpie route, 1 hard stop (step 7 user sign-off, mandatory), optional second hard stop (after the step 2 broad search, decided by the user at onboarding).
 
 light and heavy are sibling modes of the same skill, handling decision memos within 5 pages and 15k-word+ long-form reports respectively. All three share the hypothesis-lock starting point; downstream each mode is self-governing.
 
 ---
 
 ## 1. New-project onboarding
+
+### Step 0a — Cost gate + template (required before scaffold)
+
+Run `python3 ../../../scripts/estimate.py --mode medium --sources <n>` and show the **level-2** full card (mode, token range, duration, free/paid channels, cloud upload, estimated cost, budget, template). `medium` needs an explicit yes. Paid channels stay off (`ALLOW_PAID=0`); a paid review would be a separate level-3 confirmation. Template default `light-green`; choose on the same screen. Do not scaffold or draft before confirmation.
 
 ### Step 0: announce
 
@@ -39,10 +43,10 @@ Briefly confirm: "I have read the medium mode `references/workflow_medium.md` an
 - Output form: PDF (main) + Word docx (derivation). **No HTML, no WeChat JPG, no slides.**
 - Length: 12-15 page target (**< 12 pages is too thin; backfill content or deepen charts, do not ship**; 6-7 pages strong warning + suggest moving to light; 16-20 pages strong warning + suggest trimming; 20+ pages re-assess medium / heavy).
 - Charts: 6-10, **charts first** (build charts before writing the body, per heavy step 7 discipline).
-- LLM: single LLM only (Claude solo throughout), no multi-LLM critique.
+- model: single magpie route only (magpie free-first route throughout), no magpie multi-model critique.
 - Summary form: default "three-part summary" (conclusion + key numbers + so-what). The user can ask for a single BLUF paragraph.
 - Time expectation: ~1 h, single session.
-- Author byline / email: read the default from the global `~/.claude/CLAUDE.md` "author byline" section; ask explicitly only if absent.
+- Author byline / email: **default blank**; ask only if the user wants a byline. Never insert a built-in signature.
 
 ### Step 2: scaffold
 
@@ -107,13 +111,13 @@ Write the step 1 hypothesis into the `1_topic/topic.md` draft (one-paragraph res
 | 3 | outline draft (h1 + h2 + chart list) | soft | 20 min | heavy 6 trimmed |
 | 4 | data + 6-10 charts (one script per chart, double-landing, 4-item visual self-check) | soft | 60-90 min | **inherits all heavy 7 discipline**, fewer charts |
 | 5 | draft in one pass, 12-15 pages | soft | 45-60 min | heavy 8 default path |
-| 6 | self-critique + verifying (one pass in single LLM, calls `market-research-skills:verifying`) | soft | 20 min | heavy 9b + 9c merged/trimmed |
+| 6 | self-critique + verifying (one pass in single magpie route, calls `market-research-skills:verifying`) | soft | 20 min | heavy 9b + 9c merged/trimmed |
 | 7 | user sign-off (user reads v1 PDF, gives feedback, iterates) | **hard** | user's pace | heavy 9d |
 | 8 | finalise + Word derivation (quarto render + pandoc qmd→docx) | soft | 10 min | heavy 10 trimmed, drops HTML / WeChat |
 
 **0 hard stops ≠ 0 self-check gates**. After each step lands, the AI briefly tells the user the stage output; **soft stops auto-proceed**. Step 7 is the only mandatory hard stop. Whether step 2 is a hard stop is decided by the user at onboarding Q3. The user can stop, redirect, or roll back at any time.
 
-Heavy steps dropped: 3 (AI suggests directions) / 4 (topic hard stop) / 5 (supplementary search, merged into step 2) / 9a (DS polish) / 9b–9c split / 10c (HTML derivation) / 10d (WeChat derivation) / 11 (per-section retrospective).
+Heavy steps dropped: 3 (AI suggests directions) / 4 (topic hard stop) / 5 (supplementary search, merged into step 2) / 9a (another model polish) / 9b–9c split / 10c (HTML derivation) / 10d (WeChat derivation) / 11 (per-section retrospective).
 
 ---
 
@@ -161,7 +165,7 @@ Heavy steps dropped: 3 (AI suggests directions) / 4 (topic hard stop) / 5 (suppl
 
 **Goal**: fix the topic direction (quantity first, coverage first). Scale compressed to ~15 sources (heavy is usually 30-50).
 
-**Operations**: Claude solo walks through the source classes below, using the iFinD MCP or `financial-data-sources` skill for data. Claude synthesises into `2_research/research.md`.
+**Operations**: magpie free-first route walks through the source classes below, using the iFinD MCP or `financial-data-sources` skill for data. the magpie-routed AI synthesises into `2_research/research.md`.
 
 **Key discipline: source coverage (7 classes, at least 4 mandatory)**
 
@@ -230,7 +234,7 @@ The user may drop material into `2_research/pdfs/` at any time. These files **ra
 
 **Pitfall warnings**:
 
-- A single LLM's key judgement must be cross-checked against another source class (e.g. IMF estimate vs official sovereign disclosure) before becoming a conclusion. **A single source is not enough.**
+- A single magpie route's key judgement must be cross-checked against another source class (e.g. IMF estimate vs official sovereign disclosure) before becoming a conclusion. **A single source is not enough.**
 - Be cautious concluding "not found"; the search terms may be wrong, try another keyword set or two.
 
 ---
@@ -250,7 +254,7 @@ The user may drop material into `2_research/pdfs/` at any time. These files **ra
    - key citations (specific document name + page)
 4. **Mandatory paragraphs**: "what we do not do" + "uncertainty boundary" (data gaps, caliper limits, commercial-information risk, etc.).
 
-**Chart-list generation**: Claude proposes a chart list from the library (which charts in each section support the argument), targeting **6-10**, **pre-screened against the step 4 "6 add-figure criteria"**.
+**Chart-list generation**: the magpie-routed AI proposes a chart list from the library (which charts in each section support the argument), targeting **6-10**, **pre-screened against the step 4 "6 add-figure criteria"**.
 
 **Link between outline and step 4 add/remove-figure criteria**:
 
@@ -371,20 +375,20 @@ Per spec §4, "the AI does not do visual checks". Before step 4 commit the AI do
 
 **Key question**: organise charts and documents into report language.
 
-**Lead**: Claude solo throughout (first draft + self-polish + format / render tuning). critique is left to step 6.
+**Lead**: magpie free-first route throughout (first draft + self-polish + format / render tuning). critique is left to step 6.
 
-**Writing discipline**: when Claude writes, **follow §5 writing standards strictly**, targeting a step 5 final quality equal to third-party-edited prose.
+**Writing discipline**: when the magpie-routed AI writes, **follow §5 writing standards strictly**, targeting a step 5 final quality equal to third-party-edited prose.
 
-**Default: one continuous draft**: Claude writes all chapters in outline order, then **auto-proceeds to step 6 self-critique** after the full v1. The rationale is that the outline is final after step 3 + step 4 bidirectional iteration, take-aways are locked, per-section stop-and-review costs far exceed the value, and fatal errors are caught by step 6 self-critique and step 7 sign-off.
+**Default: one continuous draft**: the magpie-routed AI writes all chapters in outline order, then **auto-proceeds to step 6 self-critique** after the full v1. The rationale is that the outline is final after step 3 + step 4 bidirectional iteration, take-aways are locked, per-section stop-and-review costs far exceed the value, and fatal errors are caught by step 6 self-critique and step 7 sign-off.
 
 **fallback: per-section hard stop** (enabled on explicit user request). Stop after each section for user review before writing the next. Fits: outline not fully locked, user wants deep involvement in each section's argument-flow calibration.
 
 **Operating order**:
 
-1. Claude writes the first draft per section (v1.0), **self-checking §5 discipline per section** (period continuation / list colon / embedded take-away / "ppts" → "percentage points" / written connectives / numbered lead-ins / no technical symbols as conjunctions). Also a **per-section depth check against the outline contract**: each section carries its planned chart(s) and is more than a 1-2-paragraph gloss; a section thinner than its contract take-away goes back to step 2 / 4 for material, it is not padded with filler.
+1. the magpie-routed AI writes the first draft per section (v1.0), **self-checking §5 discipline per section** (period continuation / list colon / embedded take-away / "ppts" → "percentage points" / written connectives / numbered lead-ins / no technical symbols as conjunctions). Also a **per-section depth check against the outline contract**: each section carries its planned chart(s) and is more than a 1-2-paragraph gloss; a section thinner than its contract take-away goes back to step 2 / 4 for material, it is not padded with filler.
 2. Once a section passes self-check, write the next immediately (default one continuous pass).
 3. After the full v1.0, do render / font / YAML tuning (v1.1 → v1.x); the body does not change.
-4. The step 5 final = Claude's pure version, **snapshot to `7_draft/_process/draft_v1_claude.qmd`** (this must land before step 6 changes text, or there is no "pure Claude baseline" to revert to).
+4. The step 5 final = the magpie-routed AI's pure version, **snapshot to `7_draft/_process/draft_v1_claude.qmd`** (this must land before step 6 changes text, or there is no "pure the magpie-routed AI baseline" to revert to).
 5. Auto-proceed to step 6.
 
 **Pre-writing self-check list**: when each section's v1 is done, run the lightweight subset (em-dash, emoji, meta-language, lyrical padding) + the "chart-script / CSV / body three-way consistency" check; after the full v1, run the full §6 list.
@@ -437,7 +441,7 @@ date: today
 
 **Key question**: does the full draft hold up? Are all caveats reconciled?
 
-**Lead**: Claude self-critique (single LLM, no external GPT critique).
+**Lead**: magpie-routed self-critique (single magpie route, no external second-model critique).
 
 **Sub-steps in series**:
 
@@ -739,7 +743,7 @@ Do not mix them up. The table draws the clean line:
 | Length | 5 pages / 2500-3000 chars | **12-15 pages** | 15k+ words / 35+ pages |
 | Charts | 0 | **6-10** | usually 15+, often 30+ |
 | Citation | inline footnote | **inline footnote** | references.bib |
-| LLM | single only | **single only** | single / multi-LLM optional |
+| model | single only | **single only** | single / magpie multi-model optional |
 | Hard stops | 0 | **1 (step 7 sign-off) + optional 1 (after step 2)** | 3 (outline / draft / final) |
 | Derivations | PDF + Word | **PDF + Word** | PDF + Word + HTML + WeChat |
 | Retrospective | none | **optional** | mandatory (§11.2 audit) |
@@ -836,7 +840,7 @@ Cross-session progress panel, maintained by the AI, updated once before each ses
 - **Output form**: PDF main report + Word docx derivation (default)
 - **Target audience**: <expert / dual>
 - **Toolchain**: Quarto + xelatex for PDF; Python user-level install (no venv)
-- **LLM mode**: single LLM (Claude solo), locked at medium workflow §1 onboarding
+- **model mode**: single magpie route (magpie free-first route), locked at medium workflow §1 onboarding
 
 ## Writing & layout
 
@@ -938,4 +942,4 @@ Do not write progress into CLAUDE.md, nor conventions into _state.md.
 
 ### A.8 both-languages principle
 
-International orgs, investment banks, academia mostly English; regional, policy, primary news often more accurate in Chinese. In medium single-LLM mode, Claude alone walks 4-7 classes, filling Chinese regional ones via iFinD MCP and WeChat WebFetch.
+International orgs, investment banks, academia mostly English; regional, policy, primary news often more accurate in Chinese. In medium single-model mode, the magpie-routed AI alone walks 4-7 classes, filling Chinese regional ones via iFinD MCP and WeChat WebFetch.

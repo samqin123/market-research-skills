@@ -1,0 +1,60 @@
+# Final acceptance summary — 2026-11-14
+
+1. grep (two pattern groups, self-output excluded):
+   PASS (no matches)
+   PASS (no matches)
+
+2. verifying smoke: smoke/verifying-smoke.md (MND official vs SIPRI, multi-source side-by-side)
+3. topic-brief: smoke/topic-brief-light-green.html (template=light-green, author occurrences=0)
+4. analyst light: smoke/analyst-light-gate.txt (L1 exit 10 -> confirmed 0 -> ANALYST_MAGPIE_OK)
+5. local-vault: smoke/local-vault-semiconductor_note.md (pymupdf4llm; MinerU 0; magpie enriched)
+6. pack: smoke/pack-check.txt (4 zips; no exact .env / logs)
+7. .env: smoke/env-check.txt (untracked, ignored, 0600, value never read)
+
+Version: 2.0.0
+Branch: adapt/v2
+Working tree before commit:
+   M .claude-plugin/marketplace.json
+   M .claude-plugin/plugin.json
+   M .gitignore
+   M CHANGELOG.md
+   M README.md
+   M docs/2026-05-26-design.md
+   M scripts/pack.sh
+   M skills/analyst-research/MODE_REGISTRY.md
+   M skills/analyst-research/MODE_REGISTRY.zh.md
+   M skills/analyst-research/SKILL.md
+   M skills/analyst-research/SKILL.zh.md
+   M skills/analyst-research/references/report_style_spec.md
+   M skills/analyst-research/references/report_style_spec.zh.md
+   M skills/analyst-research/references/workflow.md
+   M skills/analyst-research/references/workflow.zh.md
+   M skills/analyst-research/references/workflow_heavy.md
+   M skills/analyst-research/references/workflow_heavy.zh.md
+   M skills/analyst-research/references/workflow_light.md
+   M skills/analyst-research/references/workflow_light.zh.md
+   M skills/analyst-research/references/workflow_medium.md
+   M skills/analyst-research/references/workflow_medium.zh.md
+   M skills/local-vault/SKILL.md
+   M skills/local-vault/SKILL.zh.md
+   M skills/local-vault/scripts/.env.example
+   M skills/local-vault/scripts/config.py
+   M skills/local-vault/scripts/sync.py
+   M skills/topic-brief/README.md
+   M skills/topic-brief/SKILL.md
+   M skills/topic-brief/SKILL.zh.md
+   M skills/topic-brief/lib/renderer.py
+   M skills/topic-brief/lib/schema.py
+   M skills/topic-brief/prompts/system.md
+   M skills/topic-brief/scripts/render.py
+   M skills/topic-brief/templates/briefing.html
+   M skills/verifying/README.md
+   M skills/verifying/SKILL.md
+   M skills/verifying/SKILL.zh.md
+  ?? .env.example
+  ?? ADAPT-REPORT.md
+  ?? references/
+  ?? scripts/estimate.py
+  ?? skills/local-vault/scripts/magpie_client.py
+  ?? smoke/
+  ?? templates/

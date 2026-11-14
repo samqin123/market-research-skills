@@ -1,0 +1,6 @@
+# Cost gate — overrun guard sample
+
+$ MAGPIE_BASE_URL=... MAGPIE_MODEL_MAIN=group/free-first python3 scripts/estimate.py --mode light --sources 25 --actual-total-tokens 100000 --actual-cost 0 --confirmed
+[L1] light · free (group/free-first) · tokens ≈ 30k–35k in · 7k–11k out · 15–25 min · ¥0 · template: light-green · proceed? (one word)
+
+exit=3

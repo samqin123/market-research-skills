@@ -25,6 +25,10 @@ Relationship to the project-level `CLAUDE.md`: CLAUDE.md is a specific project's
 
 ### 1.3 New-project onboarding flow
 
+### Step 0a — Cost gate + template (required before scaffold)
+
+Run `python3 ../../../scripts/estimate.py --mode heavy --sources <n>` and show the **level-2** full card (mode, token range, duration, free/paid channels, cloud upload, estimated cost, budget, template). `heavy` needs an explicit yes. If magpie multi-model is requested, that is an **additional level-3** line and needs its own confirmation; otherwise stay on the free single route. Paid heavy-review is level 3 and off by default. Template default `light-green`; choose on the same screen. Do not scaffold or draft before confirmation. During the run, stop if actual > 150% of the estimate or a budget cap is hit.
+
 **Scenario**: the user wants to scaffold the project and launch the 11-step flow in one main conversation. The skill as a whole (`SKILL.md` + `references/workflow_heavy.md` + `references/report_style_spec.md` + `scripts/chart_template.py` + `scripts/publication-style-template.html` + `scripts/author.jpg`) arrives one of two ways: A. the skill is triggered and the AI copies it wholesale into the project root; B. the user manually copies the `analyst-research/` folder into the new project root. When the AI assistant **first reads this document** in a new-project conversation, it reads the two references/ docs in order, then enters the flow below.
 
 **Step 0: three-piece-set check**
@@ -62,14 +66,14 @@ Briefly confirm: "I have read the analyst-research/ three-piece set and am ready
 Ask three onboarding questions at the same time; lock the answers and do not re-ask:
 
 0. **Report language?** English (default) / Chinese / other. If unspecified, write the main report and derivations in English (see SKILL.md "Language policy"). English drafts skip the Chinese colon redline and enforce the unescaped-`$` redline (write amounts as `\$`, else LaTeX treats `$` as a math delimiter and the render fails). Lock into CLAUDE.md.
-1. **Multi-LLM collaboration mode?**
-   - **No (default)**: Claude solo throughout. Step 2 broad search and supplementary search done by Claude alone; Step 9b critique by Claude self-critique against 6 perspectives (facts, calipers, citations, cross-section consistency, argument flow, language standards), weaker independence than multi-LLM.
-   - **Yes**: Step 2 runs three in parallel (Claude + GPT + DS), Step 9b critique by GPT (not DS). Other steps still Claude solo.
-   - Multi-LLM mode requires the user to manually switch to the relevant plugin or web app for GPT / DS, a significant rhythm cost; single-LLM has no switching cost but loses critique independence. Default to No; state explicitly when confirming Yes.
+1. **Magpie multi-model collaboration mode?**
+   - **No (default)**: one free-first route throughout. Step 2 broad search and supplementary search use that route; Step 9b uses magpie-routed self-critique against 6 perspectives (facts, calipers, citations, cross-section consistency, argument flow, language standards), which is weaker than an independent second family.
+   - **Yes**: Step 2 runs two or three model families in parallel **behind magpie**; Step 9b critique uses a different family. Other steps stay on the primary route. This consumes more tokens and may need a level-3 confirmation if any paid or external multi-model call is involved.
+   - All calls still go through the one magpie gateway; no manual vendor switching. Default to No; state explicitly when confirming Yes.
 2. **Is there a validated Quarto `_quarto.yml` template to reuse?**
-   - Field experience: a user's already-validated yml beats Claude's from-scratch "best practice", saving multiple rounds of font / linestretch / TOC-localisation tuning.
+   - Field experience: a user's already-validated yml beats the magpie-routed AI's from-scratch "best practice", saving multiple rounds of font / linestretch / TOC-localisation tuning.
 
-After the three answers lock, write them into the project CLAUDE.md (language into the "report language" section, multi-LLM into the "multi-LLM collaboration" section), then proceed to Step 2 scaffolding.
+After the three answers lock, write them into the project CLAUDE.md (language into the "report language" section, magpie multi-model into the "magpie multi-model collaboration" section), then proceed to Step 2 scaffolding.
 
 Other toolchain defaults are not asked each time. If the user adjusts a default (e.g. switch to Word), the user states it:
 
@@ -156,7 +160,7 @@ Without user reminder, the AI runs throughout:
 - download full text before any structural citation of an important document (§step 5)
 - data + script must both land (§5.5)
 - writing standards, PDF compatibility, CSV hygiene run through all steps
-- under multi-LLM parallel output, each LLM produces only under `_process/<llm>/`, synthesised by Claude
+- under magpie multi-model parallel output, each model produces only under `_process/<llm>/`, synthesised by the magpie-routed AI
 
 **Handling disagreement**:
 - user says "skip a step": first ask "why"; hard stops cannot be skipped, soft stops can have depth trimmed
@@ -209,16 +213,16 @@ One-shot Q&A, pure literary creation, marketing copy, tool-script-only developme
 | Step | Name | Lead | Stop |
 |---|---|---|:-:|
 | 1 | initial topic | user proposes | soft |
-| 2 | broad search | Claude solo (single-LLM default); three in parallel (multi-LLM) | soft |
-| 3 | AI suggests topic directions from material | Claude | soft |
+| 2 | broad search | the free-first single route (default); three in parallel (magpie multi-model) | soft |
+| 3 | AI suggests topic directions from material | the magpie-routed AI | soft |
 | 4 | confirm topic and thesis | user | **hard #1** |
-| 5 | supplementary search (focused depth, full-text download of key material) | Claude solo (multi-LLM may run three in parallel) | soft |
-| 6 | detailed outline draft (with chart list) | Claude solo (multi-LLM may run three brainstorm) | **hard #2** |
-| 7 | complete charts and tables, backfill outline | Claude lead | soft (announce after landing, user reviews JPGs any time) |
-| 8 | draft writing (default one continuous pass) | Claude solo (incl. render and YAML tuning) | soft (per-section hard stop as fallback) |
-| 9 | refine: 9b critique → 9c verifying → 9d user sign-off | single-LLM Claude self-critique; multi-LLM GPT critique | soft (9d **hard #3**) |
-| 10 | finalise + derive: 10a freeze main PDF, 10b Word, 10c publication HTML (optional), 10d WeChat JPG slices (optional) | Claude | soft (announce after each sub-step lands) |
-| 11 | retrospective | Claude + user | anytime (11.2 one-time project-close audit) |
+| 5 | supplementary search (focused depth, full-text download of key material) | the free-first single route (multi-model may run three in parallel) | soft |
+| 6 | detailed outline draft (with chart list) | the free-first single route (multi-model may run three in parallel) | **hard #2** |
+| 7 | complete charts and tables, backfill outline | the magpie-routed AI lead | soft (announce after landing, user reviews JPGs any time) |
+| 8 | draft writing (default one continuous pass) | the free-first single route (incl. render and YAML tuning) | soft (per-section hard stop as fallback) |
+| 9 | refine: 9b critique → 9c verifying → 9d user sign-off | single-model magpie-routed self-critique; magpie multi-model second-model critique | soft (9d **hard #3**) |
+| 10 | finalise + derive: 10a freeze main PDF, 10b Word, 10c publication HTML (optional), 10d WeChat JPG slices (optional) | the magpie-routed AI | soft (announce after each sub-step lands) |
+| 11 | retrospective | the magpie-routed AI + user | anytime (11.2 one-time project-close audit) |
 
 **Hard vs soft stop**:
 - **Hard stop**: must stop and wait for user review / sign-off; the AI cannot proceed on its own.
@@ -250,10 +254,10 @@ One-shot Q&A, pure literary creation, marketing copy, tool-script-only developme
 
 **Goal**: fix the topic direction (quantity first, coverage first).
 
-**Operations** (per the LLM mode locked at onboarding):
+**Operations** (per the model mode locked at onboarding):
 
-- **Single-LLM mode (default)**: Claude solo walks all seven source classes, using the iFinD MCP or `financial-data-sources` skill for data. **The blind-spot safety net in single-LLM mode is the user manually supplying key PDFs** (field experience: a project once had the user supply 11 core PDFs after step 5, surfacing 8 key findings step 2 had missed). Claude synthesises into `2_research/research.md`.
-- **Multi-LLM mode**: Claude / GPT / DeepSeek search independently; their search-engine interfaces, training-data coverage, and retrieval styles differ widely, so parallel runs avoid single-LLM blind spots (field case: one LLM missed a regional statistics-office dataset, another supplied it after the user's follow-up). Claude synthesises, dedupes, and classifies into `research.md`.
+- **Single-model mode (default)**: magpie free-first route walks all seven source classes, using the iFinD MCP or `financial-data-sources` skill for data. **The blind-spot safety net in single-model mode is the user manually supplying key PDFs** (field experience: a project once had the user supply 11 core PDFs after step 5, surfacing 8 key findings step 2 had missed). the magpie-routed AI synthesises into `2_research/research.md`.
+- **Magpie multi-model mode**: the magpie-routed AI / a second model / a second free model search independently; their search-engine interfaces, training-data coverage, and retrieval styles differ widely, so parallel runs avoid single-model blind spots (field case: one model missed a regional statistics-office dataset, another supplied it after the user's follow-up). the magpie-routed AI synthesises, dedupes, and classifies into `research.md`.
 
 Both modes share:
 
@@ -274,11 +278,11 @@ In the broad search the AI must **proactively search the following seven source 
 | A.6 WeChat / industry communities | finance / regional / vertical Chinese public accounts |
 | A.7 databases (programmatic) | available MCP / API / skill: iFind, OpenBB, `financial-data-sources` skill |
 
-**Both-languages principle**: international orgs, investment banks, academia mostly English; regional, policy, primary news often more accurate in Chinese. In multi-LLM mode the three divide: Claude leans English academic and bank reports, DeepSeek Chinese and regional context, GPT balanced (see §6.2). In single-LLM mode Claude alone walks all seven, filling Chinese regional ones via iFinD MCP and WeChat WebFetch.
+**Both-languages principle**: international orgs, investment banks, academia mostly English; regional, policy, primary news often more accurate in Chinese. In magpie multi-model mode the three divide: the magpie-routed AI leans English academic and bank reports, a second free model Chinese and regional context, a second model balanced (see §6.2). In single-model mode the magpie-routed AI alone walks all seven, filling Chinese regional ones via iFinD MCP and WeChat WebFetch.
 
 **Source-coverage self-check**: at the end of step 2 the AI must self-check whether all seven classes were searched. Any class not searched at all must be done before step 3.
 
-**Deliverable**: `2_research/research.md` first draft (seven sections matching A.1-A.7), raw multi-LLM output kept in `2_research/_process/`.
+**Deliverable**: `2_research/research.md` first draft (seven sections matching A.1-A.7), raw magpie multi-model output kept in `2_research/_process/`.
 
 **Key discipline: "open the page and download, then judge"**
 
@@ -286,8 +290,8 @@ When scouting data, **download at least one representative point of actual data 
 
 **Pitfall warnings**:
 
-- (multi-LLM only) when the three parallel searches conflict, do not let Claude arbitrate; show the user the raw conflict.
-- (single-LLM only) a single LLM's key judgement must be cross-checked against another source class (e.g. IMF estimate vs official sovereign disclosure) before becoming a conclusion. A single source is not enough.
+- (magpie multi-model only) when the three parallel searches conflict, do not let the magpie-routed AI arbitrate; show the user the raw conflict.
+- (single-model only) a single magpie route's key judgement must be cross-checked against another source class (e.g. IMF estimate vs official sovereign disclosure) before becoming a conclusion. A single source is not enough.
 - Be cautious concluding "not found"; the search terms may be wrong, try another keyword set or two.
 
 ---
@@ -337,8 +341,8 @@ When scouting data, **download at least one representative point of actual data 
 
 **Operations**:
 - based on topic.md's chapter skeleton, list per section the supporting material still needed
-- **single-LLM mode (default)**: Claude solo deep-searches the sub-questions, the user supplies key full-text documents
-- **multi-LLM mode**: three parallel deep-searches on sub-questions, Claude synthesises
+- **single-model mode (default)**: magpie free-first route deep-searches the sub-questions, the user supplies key full-text documents
+- **magpie multi-model mode**: three parallel deep-searches on sub-questions, the magpie-routed AI synthesises
 - full-text download of key documents (both modes, see discipline below)
 
 **Key discipline: full-text download of important material**
@@ -389,12 +393,12 @@ The user may drop material into `2_research/pdfs/` at any time (not only PDFs; a
   - key citations (specific document name + page)
 - **mandatory paragraphs**: "what we do not do" + "uncertainty boundary" (data gaps, caliper limits, commercial-information risk, etc.)
 
-**Chart-list generation (by LLM mode)**:
+**Chart-list generation (by model mode)**:
 
-- **single-LLM mode (default)**: Claude alone proposes the chart list from the full library (which charts in each section support the argument), the user decides, lands in the outline
-- **multi-LLM mode**: Claude / GPT / DeepSeek each propose a chart plan, Claude synthesises one unified list. Tendencies: data-precision and caliper-analysis charts strong with GPT, historical-time-series and regional-context charts strong with DS, argument-flow anchoring and cross-section bridging strong with Claude
+- **single-model mode (default)**: the magpie-routed AI alone proposes the chart list from the full library (which charts in each section support the argument), the user decides, lands in the outline
+- **magpie multi-model mode**: the magpie-routed AI / a second model / a second free model each propose a chart plan, the magpie-routed AI synthesises one unified list. Tendencies: data-precision and caliper-analysis charts strong with a second model, historical-time-series and regional-context charts strong with another model, argument-flow anchoring and cross-section bridging strong with the magpie-routed AI
 
-In both modes, the final deliverable is one unified chart list synthesised by Claude, not a stitch of three originals.
+In both modes, the final deliverable is one unified chart list synthesised by the magpie-routed AI, not a stitch of three originals.
 
 **Outline version management**:
 
@@ -525,11 +529,11 @@ Visual problems (caliper conflicts, unit mismatches, annotation misplacement) su
 
 **Key question**: organise charts and documents into report language.
 
-**Lead**: Claude solo throughout (first draft + self-polish + format / render tuning). critique is left to step 9.
+**Lead**: magpie free-first route throughout (first draft + self-polish + format / render tuning). critique is left to step 9.
 
-**Writing discipline**: when Claude writes, **follow §7.1 and §7.1.1 strictly**, targeting a step 8 final quality equal to third-party-edited prose. The 7 rules of §7.1.1 (same-theme continuation, list expansion, embedded take-away, unit standards, written-register wording, numbered lead-ins, no technical symbols as conjunctions) are reverse-engineered from DS-polishing field practice; Claude applying them proactively achieves no-third-party-polish first-draft quality, so step 9 no longer needs a DS text-polish stage.
+**Writing discipline**: when the magpie-routed AI writes, **follow §7.1 and §7.1.1 strictly**, targeting a step 8 final quality equal to third-party-edited prose. The 7 rules of §7.1.1 (same-theme continuation, list expansion, embedded take-away, unit standards, written-register wording, numbered lead-ins, no technical symbols as conjunctions) are reverse-engineered from another model-polishing field practice; the magpie-routed AI applying them proactively achieves no-third-party-polish first-draft quality, so step 9 no longer needs a another model text-polish stage.
 
-**Default: one continuous draft**: Claude writes all chapters in outline order, then hands the full v1 to the user for one review. The rationale is that the outline was hard-stop-signed at step 6, take-aways are locked, per-section stop-and-review costs far exceed the value, and fatal errors are caught by step 9b critique.
+**Default: one continuous draft**: the magpie-routed AI writes all chapters in outline order, then hands the full v1 to the user for one review. The rationale is that the outline was hard-stop-signed at step 6, take-aways are locked, per-section stop-and-review costs far exceed the value, and fatal errors are caught by step 9b critique.
 
 **fallback: per-section hard stop** (enabled on explicit user request). Stop after each section for user review before writing the next. Fits: outline not fully locked, take-aways still adjusting, user wants deep involvement in each section's argument-flow calibration.
 
@@ -543,14 +547,14 @@ Visual problems (caliper conflicts, unit mismatches, annotation misplacement) su
 | step 9 commit count | usually 1-3 (B1, B2, B3 merged) | 9+ (fatal, serious, minor, chart-script each multiple) |
 | style and argument-flow rework cost | low, each section reviewed | high, only the full draft reveals a wrong section's argument flow to redo |
 
-**Extra note in single-LLM mode**: in single-LLM mode 9b is Claude self-critique, weaker independence than multi-LLM GPT critique. The one-continuous-pass cost has reduced safety-net ability in single-LLM mode; if the user is sensitive to fatal errors, consider the per-section hard-stop fallback.
+**Extra note in single-model mode**: in single-model mode 9b is magpie-routed self-critique, weaker independence than magpie multi-model second-model critique. The one-continuous-pass cost has reduced safety-net ability in single-model mode; if the user is sensitive to fatal errors, consider the per-section hard-stop fallback.
 
 **Operating order**:
-1. Claude writes the first draft per section (v1.0), **self-checking the §7.1.1 6 rules per section** (period continuation / list colon / embedded take-away / "ppts" → "percentage points" / written connectives / numbered lead-ins). Also **per-section depth self-check against the outline contract**: each section carries its planned chart(s) and is more than the 1-2-paragraph laziness signal (step 4); a section that came out thinner than its contract take-away promised goes back to step 5 / 7 for more material, it is not padded with filler.
+1. the magpie-routed AI writes the first draft per section (v1.0), **self-checking the §7.1.1 6 rules per section** (period continuation / list colon / embedded take-away / "ppts" → "percentage points" / written connectives / numbered lead-ins). Also **per-section depth self-check against the outline contract**: each section carries its planned chart(s) and is more than the 1-2-paragraph laziness signal (step 4); a section that came out thinner than its contract take-away promised goes back to step 5 / 7 for more material, it is not padded with filler.
 2. After each section's v1, hand the user "structure + data + argument".
 3. After the full v1.0, do render / font / YAML tuning (v1.1 → v1.x); the body does not change.
-4. The step 8 final = Claude's pure version, **snapshot to `_process/draft_v1_claude.qmd`** (this must land before step 9 changes text, or there is no "pure Claude baseline" to revert to).
-5. Proceed to step 9 (GPT critique → verifying → user sign-off).
+4. The step 8 final = the magpie-routed AI's pure version, **snapshot to `_process/draft_v1_claude.qmd`** (this must land before step 9 changes text, or there is no "pure the magpie-routed AI baseline" to revert to).
+5. Proceed to step 9 (second-model critique → verifying → user sign-off).
 
 **Pre-writing self-check list** (run when each section's v1 is done):
 
@@ -574,7 +578,7 @@ When a section cites a chart (e.g. "fig_X metric rose from A to B"), verify item
 2. Do title / source / note in `make_fig_X_*.py` also write those two numbers? If so, consistent?
 3. Does the rendered fig PDF (open the JPG) show axis values / data labels matching 16% / 24%?
 
-If anything disagrees, **fix it in that section**, do not defer it to step 9b GPT to catch (this project's 9b once found 18 chart-script strings inconsistent with CSV / body — proactive saves 3x the work of reactive).
+If anything disagrees, **fix it in that section**, do not defer it to step 9b a second model to catch (this project's 9b once found 18 chart-script strings inconsistent with CSV / body — proactive saves 3x the work of reactive).
 
 **Finalise count-gate (anti-slacking, see §7.4)**: after the full v1 draft, before handing it to the user, run the §7.4 count-gate and **paste the actual measured numbers** (pages, charts, words) into your report-back, exactly like the grep redlines. The signed step-6 outline contract and the heavy band (30-40 pages / 25-35 charts / 15k words) are the floor. **If any dimension is clearly below floor (< 25 pages or < 20 charts, per step 4), do not declare the draft complete** — state which dimension is short and go back to step 5 (more search) / 6 (more chapters) / 7 (more charts). The gate is cleared only by genuine coverage depth: do **not** close the gap by padding (lyrical filler, restating a point, splitting one argument into choppy paragraphs) or by fabricating numbers (§5.2). If the real material honestly cannot reach the band, say so to the user explicitly rather than padding — but a heavy report landing far below the band almost always means the step 5 search or step 6 outline was too shallow, not that the topic is exhausted.
 
@@ -588,11 +592,11 @@ If anything disagrees, **fix it in that section**, do not defer it to step 9b GP
 
 **Three sub-steps in series**:
 
-- **9b · critique and Claude's three-batch integration into v2** (two tracks by LLM mode)
+- **9b · critique and the magpie-routed AI's three-batch integration into v2** (two tracks by model mode)
 - **9c · verifying skill checks unresolved caveats, lands v2.x**
 - **9d · user sign-off** (hard-stop gate)
 
-Sub-step numbering keeps 9b / 9c / 9d, not renumbered to 9a / 9b / 9c, to stay stable against earlier versions for cross-version reading. The original 9a DS text-polish sub-step is removed in this version (the DS teaching value is distilled into §7.1.1, Claude applying it at step 8 achieves equal quality).
+Sub-step numbering keeps 9b / 9c / 9d, not renumbered to 9a / 9b / 9c, to stay stable against earlier versions for cross-version reading. The original 9a another model text-polish sub-step is removed in this version (the another model teaching value is distilled into §7.1.1, the magpie-routed AI applying it at step 8 achieves equal quality).
 
 **Version-number convention**:
 
@@ -604,52 +608,52 @@ Sub-step numbering keeps 9b / 9c / 9d, not renumbered to 9a / 9b / 9c, to stay s
 
 ---
 
-#### 9b · critique and Claude's three-batch integration into v2 (two tracks)
+#### 9b · critique and the magpie-routed AI's three-batch integration into v2 (two tracks)
 
-**Two-track flow** (by the LLM mode locked at onboarding):
+**Two-track flow** (by the model mode locked at onboarding):
 
-##### Single-LLM mode (default): Claude self-critique
+##### Single-model mode (default): magpie-routed self-critique
 
-1. In a separate conversation or context, Claude **reloads the step 8 final** (to avoid context bias) and self-critiques the whole draft against the 6 perspectives below, producing a critique list in `_process/critique_v2_self.md`:
+1. In a separate conversation or context, the magpie-routed AI **reloads the step 8 final** (to avoid context bias) and self-critiques the whole draft against the 6 perspectives below, producing a critique list in `_process/critique_v2_self.md`:
    - **Facts and data**: every number, year, person, institution must trace to an original source, the citation key really in `references.bib`
    - **Cross-section caliper consistency**: the same metric's number, unit, caliper consistent across sections
    - **Citation support**: `[@xxx]` genuinely supports the statement (no bait-and-switch)
    - **Argument flow**: sections connect, conclusions support level by level
    - **chart-script / CSV / body three-way consistency**: chart title, source, note aligned with CSV data and body citation (this project once exposed 18 inconsistent chart-script strings at once, a high-frequency pitfall)
    - **Language standards**: see §7 writing standards
-2. Claude integrates the critique list in batches B1 / B2 / B3
+2. the magpie-routed AI integrates the critique list in batches B1 / B2 / B3
 3. one commit per batch + decision log → `_process/v2_integration_log.md`
 
-**Weak independence in single-LLM mode**: Claude self-evaluating its own draft has no second perspective, higher risk of missing a fatal error than multi-LLM. Three hedges:
+**Weak independence in single-model mode**: the magpie-routed AI self-evaluating its own draft has no second perspective, higher risk of missing a fatal error than magpie multi-model. Three hedges:
 - still handle key facts per the "don't blindly trust" principle below, independently reading the original material to verify
 - run 9c verifying rigorously, no shortcuts
 - the user reads the derivation once more before publishing
 
-##### Multi-LLM mode: GPT critique
+##### Magpie multi-model mode: second-model critique
 
-1. hand the step 8 final to GPT
-2. GPT produces a full critique → `_process/critique_v2_gpt.md`
-3. Claude integrates in batches (**> 30 critique items split into three batches, < 30 single batch**)
+1. hand the step 8 final to a second model
+2. a second model produces a full critique → `_process/critique_v2_gpt.md`
+3. the magpie-routed AI integrates in batches (**> 30 critique items split into three batches, < 30 single batch**)
 4. one commit per batch + decision log → `_process/v2_integration_log.md`
 
-**Critique independence principle**: the 9b critique LLM and the step 8 lead LLM do not overlap. In multi-LLM mode step 8 is Claude solo, 9b is GPT critique, independence is satisfied. **Do not use DS critique** (GPT independence is enough, and DS cannot see the PDF, a structural blind spot).
+**Critique independence principle**: the 9b critique model and the step 8 lead model do not overlap. In magpie multi-model mode step 8 is magpie free-first route, 9b is second-model critique, independence is satisfied. **Do not use another-model critique** (a second model independence is enough, and another model cannot see the PDF, a structural blind spot).
 
 ##### Integration batching and the "don't blindly trust" principle (both modes)
 
 **B1 / B2 / B3 three-batch classification**:
 - **B1 · light fixes**: language-standard redlines ("ppts" → "percentage points", Chinese-English mixing, lyrical padding) and chart-script / CSV / body "hard number consistency" errors
-- **B2 · fatal and serious**: fact-layer, caliper-layer, citation-layer revisions. Key fact judgements Claude must **independently verify** (read the original material), not blindly trust critique; lean toward "downgrade + add caveat", preserving information density while making uncertainty explicit
+- **B2 · fatal and serious**: fact-layer, caliper-layer, citation-layer revisions. Key fact judgements the magpie-routed AI must **independently verify** (read the original material), not blindly trust critique; lean toward "downgrade + add caveat", preserving information density while making uncertainty explicit
 - **B3 · chart-script string revisions + re-render all + PDF verification**
 
-The human does not adjudicate the B1 / B2 / B3 classification; trust Claude's three-tier handling + post-hoc audit of the decision log.
+The human does not adjudicate the B1 / B2 / B3 classification; trust the magpie-routed AI's three-tier handling + post-hoc audit of the decision log.
 
-**Claude's "don't blindly trust" principle when integrating**: for key fact judgements from critique ("number wrong", "source does not support"), Claude must **independently read the original material to verify**. Three handling directions:
+**the magpie-routed AI's "don't blindly trust" principle when integrating**: for key fact judgements from critique ("number wrong", "source does not support"), the magpie-routed AI must **independently read the original material to verify**. Three handling directions:
 
 - after verifying, judge the critique correct, revise per critique
 - after verifying, judge the critique wrong, record the rejection reason in the decision log, keep the original text
 - after verifying, judge the critique partly correct, downgrade the strong conclusion to "per media report" / "this study's estimate" / "source pending" caveat wording, preserving information density
 
-Redline: critique is a reference, not collage material. When Claude integrates critique, it must rewrite in a unified narrative voice so the reader cannot tell "which paragraph is from which".
+Redline: critique is a reference, not collage material. When the magpie-routed AI integrates critique, it must rewrite in a unified narrative voice so the reader cannot tell "which paragraph is from which".
 
 ---
 
@@ -685,18 +689,18 @@ Redline: critique is a reference, not collage material. When Claude integrates c
 
 **Key question**: after the user reads the v2.x PDF, are there problems only a human perspective can find?
 
-9d is the last gate of step 9, **hard stop**: Claude cannot skip 9d to step 10.
+9d is the last gate of step 9, **hard stop**: the magpie-routed AI cannot skip 9d to step 10.
 
 **Flow**:
 
-1. after re-rendering the v2.x PDF, Claude hands `7_draft/draft.pdf` to the user
+1. after re-rendering the v2.x PDF, the magpie-routed AI hands `7_draft/draft.pdf` to the user
 2. the user **reads the full PDF**, focusing on:
-   - does the argument flow hold (human read vs LLM-critique blind spots)
+   - does the argument flow hold (human read vs model-critique blind spots)
    - chart visual effect (spec §4 says the AI does not do visual checks, 9d is the only visual-self-check moment)
    - target-reader immersion for the WeChat or LinkedIn derivation (target reader test)
-   - whether wording or stance needs softening or strengthening (the critique LLM does not know the user's real intent)
+   - whether wording or stance needs softening or strengthening (the critique model does not know the user's real intent)
 3. the user produces a revision list (verbal, written, or direct PDF annotation)
-4. Claude integrates into v2.2 / v3 (version number by change size)
+4. the magpie-routed AI integrates into v2.2 / v3 (version number by change size)
 5. 9d may iterate (v3 → v4) until the user is satisfied
 6. the user signs off, 9d passes, proceed to step 10
 
@@ -935,67 +939,56 @@ Any edit to one (change base period, source, time point) must **reconcile all fi
 
 ---
 
-## 6. Multi-LLM collaboration mechanism
+## 6. Magpie multi-model collaboration mechanism
 
-### 6.1 Which steps need multi-LLM
+### 6.1 Which steps use more than one model
 
-The onboarding §1.3 Step 1 user decides "whether to use multi-LLM collaboration", locked throughout. Collaboration per step in the two modes:
+At onboarding §1.3 Step 1 the user decides whether to use **magpie multi-model collaboration**; the choice is locked for the project. Every call still goes through the local magpie gateway — "multi-model" means selecting two or three **different model families behind the same gateway**, not manually switching terminals or vendors.
 
-| Step | Single-LLM (default) | Multi-LLM |
+| Step | Single-route (default) | Magpie multi-model |
 |---|---|---|
-| 2 broad search | Claude solo, with iFinD MCP or `financial-data-sources` skill and user-supplied key PDFs | Claude + GPT + DS three parallel, Claude synthesises |
-| 5 supplementary search | Claude solo with user-supplied key full-text documents | three parallel (focused sub-questions), Claude synthesises |
-| 6 outline chart brainstorm | Claude one draft, user decides | three propose, Claude synthesises |
-| 7 data scripts charts | Claude solo | Claude solo |
-| 8 draft lead | Claude solo (self-polish per §7.1 and §7.1.1, target quality equal to third-party-edited) | Claude solo |
-| 9b critique | Claude self-critique (6 perspectives: facts, calipers, citations, cross-section consistency, argument flow, language standards), three-batch integration | GPT critique, Claude three-batch integration (B1 / B2 / B3) v3 |
-| 9c verifying | Claude solo calls the `market-research-skills:verifying` skill (both modes) | same |
-| 9d sign off | user reads PDF, iterates to sign-off (both modes) | same |
+| 2 broad search | the free-first route, with iFinD MCP or `financial-data-sources` and user-supplied key PDFs | three model families search in parallel; the primary route synthesises |
+| 5 supplementary search | the free-first route plus user-supplied full texts | three families in parallel (focused sub-questions); the primary route synthesises |
+| 6 outline / chart brainstorm | the primary route drafts; the user decides | three families propose; the primary route synthesises |
+| 7 data scripts / charts | the free-first route | the free-first route |
+| 8 draft lead | the free-first route (self-polish per §7.1 / §7.1.1, target quality equal to third-party editing) | the free-first route |
+| 9b critique | magpie-routed self-critique (6 perspectives: facts, calipers, citations, cross-section consistency, argument flow, language standards), integrated in three batches | a **different model family** critiques; the primary route integrates in three batches (B1 / B2 / B3) |
+| 9c verifying | the free-first route calls `market-research-skills:verifying` (both modes) | same |
+| 9d sign-off | user reads the PDF and iterates to sign-off (both modes) | same |
 
-**Weak independence of single-LLM self-critique**: Claude self-evaluating its own draft has no independent second perspective, higher fatal-error risk than multi-LLM. Three hedges: (1) the user reads the derivation once more before publishing; (2) key facts still independently verified against the original material per the 9b handling framework; (3) run 9c verifying rigorously, no shortcuts.
+**Why single-route self-critique is weaker**: the same route evaluating its own draft has no independent second perspective. Three hedges: (1) the user reads the derivation once before publishing; (2) key facts are still independently verified against the original material per §9b; (3) 9c verifying is run rigorously.
 
-**Switching cost of multi-LLM mode**: the user must manually switch to the GPT plugin or web app for critique, a significant rhythm cost. Enable only when the user explicitly asks or the project expects high GPT-independent-critique value (complex cross-source comparison, dense key numbers, a second perspective needed before external publication).
+**Multi-model cost**: it consumes more tokens and may trigger a level-3 confirmation if any paid model or external multi-model call is involved. Enable it only when the user explicitly asks or the project needs an independent critique (complex cross-source comparison, dense key numbers, pre-publication second look). If not confirmed, stay on the free single route.
 
-**DS no longer default**: field-measured DS text-polish teaching value is distilled into §7.1.1, Claude self-polishing per the rules achieves equal quality; DS critique in multi-LLM mode is handled by GPT (GPT independence is enough). DS remains a possible future fallback, not on the default path.
+### 6.2 Relative strengths (field observation, iterating)
 
-### 6.2 Relative strengths of the three (field observation, iterating)
-
-| Tool | Strength |
+| Model family behind magpie | Strength |
 |---|---|
-| **GPT** | structured frameworks, data precision, caliper analysis, research-discipline prompts |
-| **DeepSeek** | historical tracing, Chinese / regional context, time series, visual detail, original terminology. **The teaching value of Chinese long-sentence rhythm / connectives / naturalness is distilled into §7.1.1** (learned from DeepSeek polishing); step 9 default no longer calls DS, Claude applies §7.1.1 directly at step 8; DS remains a step-9 fallback (enabled when GPT critique exposes ≥ 10 "clearly needs improvement" text items) |
-| **Claude** | data archive, web scraping, report argument flow, synthesis finalisation, end-to-end referee |
+| **Family A · structured / reasoning** | frameworks, data precision, caliper analysis, research-discipline prompts |
+| **Family B · Chinese / regional** | historical tracing, Chinese / regional context, time series, visual detail, original terminology |
+| **Primary drafting route** | data archive, web scraping, report argument flow, synthesis, end-to-end referee |
 
-Model-generation turnover changes this table; the user updates the observation in the project CLAUDE.md after each project.
+Model generations change this table; the user updates the observation in the project CLAUDE.md after each project.
 
-### 6.3 The redline of synthesis
+### 6.3 The synthesis redline
 
-Do not stitch three LLMs' text. The synthesised piece must be rewritten in a unified narrative voice so the reader cannot tell "which paragraph is from which". The three originals' value is in the material, not the sentences.
+Do not stitch model outputs together. The synthesised piece must be rewritten in a unified narrative voice so the reader cannot tell which paragraph came from which model. The originals' value is in the material, not the sentences.
 
-### 6.4 State machine for multi-LLM concurrency
+### 6.4 State machine for magpie multi-model concurrency
 
-If running multi-LLM collaboration in Claude Code (via sub-agent or manual switching), during concurrency each LLM **produces only under its own subdir** (e.g. `_process/<llm>/`), not directly editing shared state files (outline.md, `_state.md`). Shared state is updated by the synthesiser (Claude) at the end of each round, avoiding last-write-wins conflicts.
+When running multi-model collaboration through magpie (sub-agents or sequential calls), each model **writes only under its own subdir** (e.g. `_process/<model>/`) and never edits shared state files (outline.md, `_state.md`) directly. Shared state is updated by the synthesiser (the primary route) at the end of each round, avoiding last-write-wins conflicts.
 
 ### 6.5 Error-diagnosis order: model → prompt → channel
 
-When a cross-LLM / cross-tool call fails, locate the root cause in this order, do not jump around:
+When a model or tool call fails, locate the root cause in this order; do not jump around:
 
-1. **Model layer**: is the model itself compatible with the scenario? Key questions:
-   - is it a Thinking / reasoner / o-series (long reasoning silence, conflicts with the streaming middle layer)?
-   - is the context window insufficient?
-   - is the model version too new / too old, tool-call schema mismatch?
-2. **Prompt layer**: is the prompt design reasonable? Key questions:
-   - task too big / output too long, split?
-   - prompt redundant / containing special characters triggering escape problems?
-   - output-format constraints the model can follow stably?
-3. **Channel layer**: is the access channel stable? Key questions:
-   - VSCode Copilot / Claude Code CLI / browser, which link?
-   - network / proxy / VPN anomaly?
-   - middle layer (Copilot streaming gateway) stream-break?
+1. **Model layer**: is the model compatible with the scenario? Is it a reasoning model with a long silent phase that conflicts with streaming? Is the context window sufficient? Is the model version / tool-call schema mismatched?
+2. **Prompt layer**: is the prompt reasonable? Is the task too big / output too long? Are special characters causing escape problems? Can the model reliably follow the output-format constraints?
+3. **Channel layer**: is the gateway / network stable? Which link — IDE, CLI, browser? Any proxy / VPN anomaly? Any streaming middle-layer break?
 
-**Counter-example (field DS debugging pitfall)**: after 3 consecutive DS failures, Claude jumped straight to "prompt too long", shrank the prompt and failed, then jumped to "channel unstable" and recommended switching to Cline. The actual root cause was the user selecting `DeepSeek V4 Pro (Thinking Max)` (model layer); switching to the regular version worked immediately. The 4 wasted rounds were because the model layer was not checked first.
+**Counter-example (field debugging)**: after three consecutive failures, the AI jumped to "prompt too long", shrank the prompt and failed, then jumped to "channel unstable" and recommended switching tools. The actual root cause was the selected model tier (a Thinking / Max variant) at the model layer; switching to the regular tier worked immediately. The four wasted rounds came from not checking the model layer first.
 
-A stack-trace signature is also a misleading trap: `Copilot Request id` in the trace only means Copilot handled the request, not that Copilot is the root cause.
+A stack-trace signature can also mislead: a `Copilot Request id` only means Copilot handled the request, not that Copilot is the root cause.
 
 ---
 
@@ -1022,9 +1015,9 @@ This section is a domain-agnostic writing standard; each project CLAUDE.md can i
 - **no invented metaphors**. First drafts often borrow self-invented metaphors ("steel floor", "narrative soft-landing", "accounting magic") for shorthand, but the reader lacks the author's context and re-reads twice, reducing readability. Before finalising, replace each self-invented metaphor with a methodology or industry-standard term so the reader without context understands in one read, e.g. "steel floor" → "hard caliper", "narrative soft-landing" → "lowering or redefining". Only in the intro or conclusion as a hook may a few established industry metaphors stay (e.g. the IMF's own moving goalposts, Dutch disease); body argument uses hard terms
 - **the abstract, intro, conclusion must be separately rewritten in a second pass**. These three are "framing paragraphs" carrying the reader's first and last impression. The version written in one pass is usually fragmented, lacks insight, lacks outlook, and the reader cannot grasp a take-away. Before finalising, rewrite these three separately with three goals: (1) remove lyrical padding and rambling, (2) add one core insight (a judgement the reader walks away with), (3) the intro adds an argument map (what this report argues, in what order), the conclusion adds an outlook (which variables to watch in coming years)
 
-#### 7.1.1 Chinese long-sentence rhythm (learned from DeepSeek polishing)
+#### 7.1.1 Chinese long-sentence rhythm (learned from a second free model polishing)
 
-"Keep sentences short" means not writing complex clauses, **not** "break the same argument's supporting detail with periods". Claude's common first-draft anti-pattern is cutting an argument's evidence and take-away into multiple independent short sentences, too choppy; a co-existing anti-pattern is using technical symbols like "→", "/", "+" for written connectives, fast but forcing the reader to mental-decode. The 7 rules below are executable details distilled from DS polishing + field practice; follow them directly when writing the first draft:
+"Keep sentences short" means not writing complex clauses, **not** "break the same argument's supporting detail with periods". the magpie-routed AI's common first-draft anti-pattern is cutting an argument's evidence and take-away into multiple independent short sentences, too choppy; a co-existing anti-pattern is using technical symbols like "→", "/", "+" for written connectives, fast but forcing the reader to mental-decode. The 7 rules below are executable details distilled from another model polishing + field practice; follow them directly when writing the first draft:
 
 1. **continue same-theme supporting sentences with commas / semicolons**, not periods. `「升至 30%。这是真改革。」` → `「升至 30%，这是真改革。」`
 2. **list multiple sources / items in "主句：项 1，项 2，项 3。" one go**, not "four numbers. item 1. item 2. item 3."
@@ -1082,7 +1075,7 @@ In step 8's one-continuous-pass draft these three are usually weakest, because t
 
 #### 7.1.3 Chinese written-register lookup table
 
-§7.1.1 rule 5 "written-register connective preference" gave a few; this section expands it into a full table. Claude writes the right column directly in the first draft, saving the step-9 text-polish stage. Three categories.
+§7.1.1 rule 5 "written-register connective preference" gave a few; this section expands it into a full table. the magpie-routed AI writes the right column directly in the first draft, saving the step-9 text-polish stage. Three categories.
 
 ##### Category 1: colloquial → written
 
@@ -1271,11 +1264,11 @@ project root/
 ├── 2_research/                       steps 2 + 5: material gathering
 │   ├── research.md                   [deliverable] unified ledger (seven-class coverage + importance / path / fields / frequency)
 │   ├── pdfs/                         full-text PDFs flat, named `<n> <institution> <title>.pdf`
-│   └── _process/                     [process] multi-LLM parallel search originals
+│   └── _process/                     [process] magpie multi-model parallel search originals
 │
 ├── 3_outline/                        step 6: detailed outline
 │   ├── outline.md                    [deliverable] draft → backfilled to final after step 7
-│   └── _process/                     [process] multi-LLM brainstorm chart-list candidates
+│   └── _process/                     [process] magpie multi-model brainstorm chart-list candidates
 │
 ├── 4_data/                           step 7: data drafts
 │   ├── data.md                       [deliverable] data archive index (each CSV's source / caliper / fields / units)
@@ -1296,7 +1289,7 @@ project root/
 ├── 7_draft/                          steps 8 + 9: writing + refining
 │   ├── draft.md                      [deliverable] main report (extension `draft.qmd` when using Quarto)
 │   ├── references.bib                [deliverable] Pandoc citation library
-│   └── _process/                     [process] per-section iterations, DeepSeek text v1.5, Claude integration v2 interim, multi-LLM critique originals (see the §11 `_process/` guide)
+│   └── _process/                     [process] per-section iterations, a second free model text v1.5, the magpie-routed AI integration v2 interim, magpie multi-model critique originals (see the §11 `_process/` guide)
 │
 ├── 8_publication/                    step 10: final derivations (main PDF stays in 7_draft/, not copied here)
 │   ├── 1_word/                       10b Word docx (Pandoc auto, for client review / annotation)
@@ -1328,15 +1321,15 @@ project root/
 | Directory | What goes in | Naming |
 |---|---|---|
 | `1_topic/_process/` | step 3 AI candidate directions, user-AI topic discussion memos | `_options.md` (direction candidates) + memos as needed |
-| `2_research/_process/` | step 2 multi-LLM parallel search originals (Claude / GPT / DS each ledger) | `research_<llm>.md` (e.g. `research_gpt.md`) |
-| `3_outline/_process/` | step 6 multi-LLM brainstorm chart-list candidates; outline candidates | `outline_<llm>.md` / `figures_brainstorm_<llm>.md` |
-| `7_draft/_process/` | step 8 per-section iterations, DeepSeek text v1.5, Claude integration v2 interim; step 9 multi-LLM critique originals (GPT/DS critique) + Claude's per-item decision log | `draft_<vX>_<who>.qmd` (e.g. `draft_v1_claude.qmd` / `draft_v15_deepseek.qmd` / `draft_v2_claude.qmd`); critique `critique_<llm>.md` (e.g. `critique_gpt.md`); decisions `critique_decisions.md` |
+| `2_research/_process/` | step 2 magpie multi-model parallel search originals (the magpie-routed AI / a second model / another model each ledger) | `research_<llm>.md` (e.g. `research_gpt.md`) |
+| `3_outline/_process/` | step 6 magpie multi-model brainstorm chart-list candidates; outline candidates | `outline_<llm>.md` / `figures_brainstorm_<llm>.md` |
+| `7_draft/_process/` | step 8 per-section iterations, a second free model text v1.5, the magpie-routed AI integration v2 interim; step 9 magpie multi-model critique originals (a second model/another-model critique) + the magpie-routed AI's per-item decision log | `draft_<vX>_<who>.qmd` (e.g. `draft_v1_claude.qmd` / `draft_v15_deepseek.qmd` / `draft_v2_claude.qmd`); critique `critique_<llm>.md` (e.g. `critique_gpt.md`); decisions `critique_decisions.md` |
 
 General rules:
 
 - **`_process/` is the process-material area, not external-facing**. The latest shippable version is always the parent dir's deliverable md (`topic.md` / `outline.md` / `draft.qmd`)
 - **cp a copy to `_process/` before each big change** (e.g. `cp 7_draft/draft.qmd 7_draft/_process/draft_v1_claude.qmd`), then edit in place
-- **under multi-LLM concurrency each LLM produces only into its own file**, not directly overwriting the shared deliverable md. The synthesiser (Claude) updates the deliverable md after integration
+- **under magpie multi-model concurrency each model produces only into its own file**, not directly overwriting the shared deliverable md. The synthesiser (the magpie-routed AI) updates the deliverable md after integration
 - `5_scripts/` `6_figures/` have no `_process/`: script and chart iteration is git-managed; keeping interim drafts is confusing
 
 **Minimal skeleton of each deliverable md** (scaffold stage creates an empty file + a purpose line, filled by later steps):
@@ -1376,7 +1369,7 @@ General rules:
 
 ## 12. `_state.md` template
 
-`_state.md` is the **only** progress file in the project root; any LLM / user entering the project looks here first. It solves one core problem: **how a new session quickly picks up context**.
+`_state.md` is the **only** progress file in the project root; any model / user entering the project looks here first. It solves one core problem: **how a new session quickly picks up context**.
 
 ### 12.1 Separation of responsibility
 
@@ -1391,7 +1384,7 @@ Do not mix the three. Rules appearing in the state file, or state appearing in t
 ```markdown
 # Project progress panel · _state.md
 
-> The project-level **only** progress file. Any LLM / user entering the project looks here first.
+> The project-level **only** progress file. Any model / user entering the project looks here first.
 > Separation of responsibility: CLAUDE.md = rules, this file = state, subdir files = content.
 
 ---
@@ -1455,11 +1448,11 @@ Tagged milestones: step-completion sign-off lock, version freeze, finalisation.
 
 ## Maintenance rules
 
-- the trigger (LLM or user) updates the "▶ Current position" section on each step switch
+- the trigger (model or user) updates the "▶ Current position" section on each step switch
 - key milestones (step completion, user sign-off lock) must be git-taggable + synced here
 - the "Key deliverable index" holds only file paths, no details (details in the output files)
 - the "git timeline" shows the last 10 commits for a quick view of activity
-- under multi-LLM concurrency each LLM produces only into its own `_process/<llm>/` subdir, not editing this file directly; the synthesiser (Claude) updates it at the end of each round
+- under magpie multi-model concurrency each model produces only into its own `_process/<llm>/` subdir, not editing this file directly; the synthesiser (the magpie-routed AI) updates it at the end of each round
 
 ---
 
@@ -1467,7 +1460,7 @@ Tagged milestones: step-completion sign-off lock, version freeze, finalisation.
 
 | Time | Operator | Action |
 |---|---|---|
-| YYYY-MM-DD | Claude / user | initialise _state.md |
+| YYYY-MM-DD | the magpie-routed AI / user | initialise _state.md |
 ```
 
 ### 12.3 When to update
@@ -1493,7 +1486,7 @@ Rule of thumb: ask "will this still hold a week from now?" Yes → CLAUDE.md; No
 
 Open questions left for future projects to validate:
 
-1. **Actual benefit of multi-LLM collaboration**: steps 2 / 5 / 6 / 9 all design multi-LLM, but each extra LLM raises cost (switching, maintaining parallel output, synthesis). In which steps is multi-LLM genuinely significantly better than single-LLM? Needs continued observation and recording of marginal benefit.
+1. **Actual benefit of magpie multi-model collaboration**: steps 2 / 5 / 6 / 9 all design magpie multi-model, but each extra model raises cost (switching, maintaining parallel output, synthesis). In which steps is magpie multi-model genuinely significantly better than single-model? Needs continued observation and recording of marginal benefit.
 
 2. **Iteration depth of charts-first**: steps 6 ↔ 7 are bidirectional, but how many rounds is reasonable? Maybe 1 for a simple project, 3-4 for a complex one. Needs observation.
 
@@ -1580,7 +1573,7 @@ Chinese and English coverage must be balanced:
 - official reports from international orgs / banks / consulting are mostly English, Chinese summaries common in Chinese-bank research and Chinese media
 - local data and policy dynamics for China / Middle East / Africa are often more accurate in Chinese primary material than English paraphrase
 - policy-document originals often have official multilingual versions (e.g. Middle East development plans in both Arabic and English), cross-checked when needed
-- multi-LLM parallel-search division: Claude leans English academic and bank, DeepSeek Chinese and regional context, GPT balanced
+- magpie multi-model parallel-search division: the magpie-routed AI leans English academic and bank, a second free model Chinese and regional context, a second model balanced
 
 ### A.9 source-coverage self-check
 

@@ -1,0 +1,40 @@
+[2026-11-14 02:49:23] === Sync started ===
+[2026-11-14 02:49:23] 扫描 /tmp/mrs-smoke/source...
+[2026-11-14 02:49:23]   扫描到 1 个候选文件，0 个跳过
+[2026-11-14 02:49:23] === COST ESTIMATE / 预估卡 ===
+[2026-11-14 02:49:23] Mode / 模式:            local-vault · 1 file(s) · gate L1
+[2026-11-14 02:49:23] Template / 模板:        n/a (local-vault); reports default light-green
+[2026-11-14 02:49:23] Channels / 通道:        free group/free-first — ¥0
+[2026-11-14 02:49:23] Cloud upload / 云端:    none
+[2026-11-14 02:49:23] Budget / 预算:          per-run ¥20 · month ¥200
+[2026-11-14 02:49:23]   → single file: proceeding; any cloud step still needs its own L3 confirmation.
+[2026-11-14 02:49:23]   Note: 数字版 PDF 走本地 pymupdf4llm；仅扫描件才会触发 MinerU 云端（L3）。
+[2026-11-14 02:49:23]   待转 — xlsx: 0, csv: 0, xls sidecar: 0, PDF: 1, pandoc(docx/rtf/odt/epub/html): 0, pptx: 0, md/txt: 0, code: 0, 音视频转写: 0, MinerU(.doc/.ppt/html/图片): 0, 孤儿: 0
+[2026-11-14 02:49:23] === PDF 本地转换尝试 1 个 ===
+[2026-11-14 02:49:24]   → converting semiconductor_note.pdf (1 pages, 0.0 MB) via pymupdf4llm...
+
+=== Document parser messages ===
+Warning: RapidOCR is missing. Install for much improved OCR results.
+[2026-11-14 02:49:24]   ✓ semiconductor_note.pdf (pymupdf4llm, 1 pages, 0.3s)
+[2026-11-14 02:49:24]   → /tmp/mrs-smoke/vault/semiconductor_note.md
+[2026-11-14 02:49:33]     magpie usage: in=533 out=1321 model=deepseek-v4.1-flash
+[2026-11-14 02:49:33]   ✨ enriched semiconductor_note.md
+[2026-11-14 02:49:33] === Summary ===
+[2026-11-14 02:49:33]   Scanned: 1
+[2026-11-14 02:49:33]   Skipped: 0
+[2026-11-14 02:49:33]   Excel 内容 (xlsx): 0
+[2026-11-14 02:49:33]   CSV/TSV: 0
+[2026-11-14 02:49:33]   Excel sidecar (.xls): 0
+[2026-11-14 02:49:33]   pandoc (docx/rtf/odt/epub/html): 0
+[2026-11-14 02:49:33]   PPT (pptx→python-pptx): 0
+[2026-11-14 02:49:33]   Markdown/文本 直拷: 0
+[2026-11-14 02:49:33]   代码/结构化文本: 0
+[2026-11-14 02:49:33]   音视频转写 (whisper): 0
+[2026-11-14 02:49:33]   pymupdf4llm 直出: 1
+[2026-11-14 02:49:33]   MinerU 处理: 0
+[2026-11-14 02:49:33]     其中 PDF fallback: 0
+[2026-11-14 02:49:33]     其中 .doc/.ppt/html/图片: 0
+[2026-11-14 02:49:33]   Orphaned: 0
+[2026-11-14 02:49:33]   Success: 1
+[2026-11-14 02:49:33]   Failed: 0
+[2026-11-14 02:49:33] === Sync finished ===

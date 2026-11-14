@@ -2,13 +2,17 @@
 
 > 英文主文件为 `workflow_light.md`（中文镜像）。
 
-适用对象：5 页内决策备忘 / executive brief / 内部 memo。预算约 15 分钟，单 LLM，0 硬停，纯文字无图，仅 PDF + Word 产出。
+适用对象：5 页内决策备忘 / executive brief / 内部 memo。预算约 15 分钟，单 magpie 路由，0 硬停，纯文字无图，仅 PDF + Word 产出。
 
 medium 与 heavy 是 analyst-research 同 skill 内的姐妹模式，分别覆盖 10-15 页主题分析与 1.5 万字+ 旗舰报告。三档共用 hypothesis-lock 起点，下游差异由本模式自治。
 
 ---
 
 ## 一、新项目 onboarding 流程
+
+### 步骤 0a —— 成本闸口 + 模板（搭脚手架前必做）
+
+跑 `python3 ../../../scripts/estimate.py --mode light --sources <n>`，出**一级**一句话卡。`light` 是免费通道单次任务：用户回一词即开工。模板选择同屏（默认 `light-green`；可选 `classic-blue` / `warm-paper`；不选不阻塞）。没回这一词之前不搭脚手架、不写正文。打包环境缺共享脚本时，按 `../../../references/cost-gate.md` 复述同一张卡。
 
 ### 第 0 步：宣告
 
@@ -26,10 +30,10 @@ medium 与 heavy 是 analyst-research 同 skill 内的姐妹模式，分别覆�
 - 篇幅：4-5 页目标（**< 4 页视为过薄，必须回补内容或加子问题深度**；6 页 OK；7-9 页强警告 + 建议精简；10+ 页要求用户重新评估是 light 还是 heavy，不强行硬截）
 - 图表：**0 张**，纯文字 + 内联 footnote 引用
 - 目标读者：**专家 / 决策者**（非双兼，不写科普）
-- LLM：单 LLM（Claude solo 全程）
+- 模型路由：单 magpie 路由（免费优先全程）
 - 摘要形态：**BLUF**（bottom line up front 单段，80-150 字开场给结论 + 关键数字 + so-what）
 - 时间预期：约 15 分钟单 session 跑完
-- 作者署名 / 邮箱：从全局 `~/.claude/CLAUDE.md`「作者署名」段读 default，无此段才显式问
+- 作者署名 / 邮箱：**默认留空**；只有用户主动要署名时才问。绝不插入内置签名。
 
 ### 第 1 步：搭建脚手架
 
@@ -90,11 +94,11 @@ cp ~/.claude/skills/analyst-research/references/_quarto-light.yml _quarto.yml
 | 步骤 | 名称 | 主导 | 时间预算 |
 |---|---|---|---|
 | 1 | hypothesis | 用户 + AI 复述 | 5 min |
-| 2 | search | Claude solo | 25 min |
-| 3 | plan | Claude solo | 5 min |
-| 4 | draft | Claude solo | 20 min |
-| 5 | self-check | Claude solo | 10 min |
-| 6 | freeze | Claude | 5 min |
+| 2 | search | magpie 免费优先单路由 | 25 min |
+| 3 | plan | magpie 免费优先单路由 | 5 min |
+| 4 | draft | magpie 免费优先单路由 | 20 min |
+| 5 | self-check | magpie 免费优先单路由 | 10 min |
+| 6 | freeze | magpie 路由 AI | 5 min |
 
 **全部 0 硬停**——AI 各步落盘后简短告知用户阶段产出，立即推进下一步。用户随时可叫停、调整方向、要求回退。
 
@@ -416,7 +420,7 @@ draft v1 完成、修订版交付前**必须** grep 核对。命令以 `draft.qm
 | 篇幅 | 5 页 / 2500-3000 字 | 1.5 万字+ |
 | 图表 | 0 | 通常 15+ 张，一图一脚本 |
 | 引用机制 | footnote 内联 | references.bib |
-| LLM | 单 LLM only | 单 / 多 LLM 可选 |
+| 模型路由 | 单 magpie 路由 | 单 / magpie 多模型 可选 |
 | 硬停 | 0 | 2（step 4 / 9d）|
 | 派生形态 | PDF + Word | PDF + Word + HTML + 公众号 |
 | 复盘 | 无 | 必做（§11.2 audit）|
